@@ -1,0 +1,109 @@
+'''Software-defined radio (SDR)''' implements radio functions such as modulation, filtering, synchronization, and demodulation in software while retaining a configurable RF front end. This page is the entry point for SDR hardware, software, and projects at IHF.
+
+{| class="wikitable" style="width:100%; text-align:center;"
+! colspan="3" | SDR documentation
+|-
+| '''Overview'''
+| [[NI USRP-2954R and UBX-160|Hardware: NI USRP-2954R and UBX-160]]
+| [[OFDM-based Joint Communication and Sensing (JCAS)|Project: OFDM-based JCAS]]
+|}
+
+__TOC__
+
+== Overview ==
+
+An SDR system normally consists of:
+
+{| class="wikitable"
+! Part
+! Purpose
+|-
+| RF front end
+| Converts between the antenna frequency and analog baseband or an intermediate frequency.
+|-
+| ADC and DAC
+| Convert between analog signals and digital samples.
+|-
+| FPGA
+| Performs time-critical processing such as interpolation, decimation, filtering, and sample transport.
+|-
+| Host interface
+| Transfers samples and control data between the SDR and the host computer, for example through 10 Gigabit Ethernet.
+|-
+| Driver and signal-processing software
+| Configures the radio and implements the application. IHF currently uses UHD and GNU Radio for the USRP platform described below.
+|}
+
+<pre>
+Receive:  Antenna/RF input -> RF front end -> ADC -> FPGA -> host interface -> application
+Transmit: Application -> host interface -> FPGA -> DAC -> RF front end -> antenna/RF output
+</pre>
+
+The usable bandwidth and sample rate are limited by the complete chain: RF front end, converters, FPGA configuration, host interface, and host processing capacity.
+
+== Hardware ==
+
+=== IHF SDR platforms ===
+
+{| class="wikitable"
+! Platform
+! Frequency range
+! Main use
+! Documentation
+|-
+| NI USRP-2954R with two UBX-160 daughterboards
+| 10 MHz to 6 GHz
+| Wideband development, communication, radar, and joint communication and sensing
+| [[NI USRP-2954R and UBX-160]]
+|}
+
+Add further IHF SDR platforms to this table and document device-specific setup and safety information on a separate hardware page.
+
+== Software ==
+
+The current USRP workflow uses:
+
+* '''UHD''' to discover, configure, and stream samples to and from the USRP;
+* '''GNU Radio''' to build and run signal-processing flowgraphs;
+* '''Python''' for custom GNU Radio blocks, automation, and result visualization; and
+* '''Git''' for version-controlled project development. See [[GIT - Versionskontrolle]].
+
+Keep reusable installation and troubleshooting guidance on the hardware page. Keep project algorithms, parameters, results, and source-code instructions on the corresponding project page or in its repository.
+
+== Projects ==
+
+{| class="wikitable"
+! Project
+! Purpose
+! Hardware
+! Documentation
+|-
+| OFDM-based Joint Communication and Sensing
+| Simultaneous communication and environmental sensing using an OFDM waveform
+| NI USRP-2954R with UBX-160 daughterboards
+| [[OFDM-based Joint Communication and Sensing (JCAS)]]
+|}
+
+== General RF practice ==
+
+* Check the frequency, power, impedance, and connector ratings of every component before connecting it.
+* Use suitable attenuation and 50-ohm terminations for conducted measurements.
+* Keep RF outputs disabled while changing cables or instruments.
+* Never exceed the maximum input level of an SDR or measurement instrument.
+* Do not infer RF channel or connector mappings from Ethernet ports. Record the mapping reported by the driver.
+* Record hardware identifiers, software versions, clock and sample rates, center frequency, gain, bandwidth, and runtime warnings with every measurement.
+
+== External documentation ==
+
+* [https://www.ettus.com/sdr-software/uhd-usrp-hardware-driver/ UHD overview]
+* [https://files.ettus.com/manual/ UHD and USRP manual]
+* [https://wiki.gnuradio.org/ GNU Radio Wiki]
+
+== Related pages ==
+
+* [[NI USRP-2954R and UBX-160]]
+* [[OFDM-based Joint Communication and Sensing (JCAS)]]
+* [[GIT - Versionskontrolle]]
+
+[[Category:Hardware]]
+[[Category:Software]]

@@ -1,0 +1,41 @@
+{
+  "Software Defined Radio (SDR)": {
+    "source": "Software_Defined_Radio_(SDR).wiki",
+    "preview": "Software_Defined_Radio_(SDR).html",
+    "categories": [
+      "Hardware",
+      "Software"
+    ],
+    "links": [
+      "NI USRP-2954R and UBX-160",
+      "OFDM-based Joint Communication and Sensing (JCAS)",
+      "GIT - Versionskontrolle"
+    ]
+  },
+  "NI USRP-2954R and UBX-160": {
+    "source": "NI_USRP-2954R_and_UBX-160.wiki",
+    "preview": "NI_USRP-2954R_and_UBX-160.html",
+    "categories": [
+      "Hardware",
+      "Messtechnik"
+    ],
+    "links": [
+      "Software Defined Radio (SDR)",
+      "OFDM-based Joint Communication and Sensing (JCAS)"
+    ]
+  },
+  "OFDM-based Joint Communication and Sensing (JCAS)": {
+    "source": "OFDM-based_Joint_Communication_and_Sensing_(JCAS).wiki",
+    "preview": "OFDM-based_Joint_Communication_and_Sensing_(JCAS).html",
+    "categories": [
+      "Projekte",
+      "Forschungsthemen",
+      "Software"
+    ],
+    "links": [
+      "Software Defined Radio (SDR)",
+      "NI USRP-2954R and UBX-160",
+      "GIT - Versionskontrolle"
+    ]
+  }
+}

@@ -1,0 +1,44 @@
+/* Local-only controls layered on the exact IHF Vector Legacy styles. */
+.sandbox-notice {
+  margin: 0 0 1em;
+  padding: 0.55em 0.8em;
+  background: #fef6e7;
+  border: 1px solid #fc3;
+}
+
+.validation-error,
+.validation-ok {
+  margin: 0.5em 0;
+  padding: 0.7em;
+}
+.validation-error { background: #fee7e6; border: 1px solid #d33; }
+.validation-ok { background: #d5fdf4; border: 1px solid #14866d; }
+
+.edit-form textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 58vh;
+  padding: 12px;
+  resize: vertical;
+  border: 1px solid #a2a9b1;
+  font: 13px/1.5 monospace;
+}
+.edit-buttons { display: flex; gap: 8px; margin: 12px 0; }
+.edit-buttons button { padding: 7px 14px; cursor: pointer; }
+.primary { color: #fff; background: #36c; border: 1px solid #2a4b8d; font-weight: 600; }
+.secondary { background: #f8f9fa; border: 1px solid #a2a9b1; }
+.preview-heading { margin-top: 1.5em; padding: 0.5em; background: #eaecf0; border: 1px solid #a2a9b1; }
+.search-result { margin: 1em 0; }
+.search-result h3 { margin-bottom: 0; }
+.search-result p { margin-top: 0.15em; color: #54595d; }
+
+#p-personal .mw-list-item > span {
+  display: inline-block;
+  padding-top: 0.5em;
+  color: #54595d;
+}
+
+@media print {
+  .sandbox-notice,
+  .edit-buttons { display: none; }
+}

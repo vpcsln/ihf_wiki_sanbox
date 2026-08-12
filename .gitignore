@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+*.swp
+*~
+.DS_Store
+.env
+.env.*
+!.env.example
+cookies.txt
+*.cookie
+sandbox/backups/*
+!sandbox/backups/.gitkeep
+core
+core.*

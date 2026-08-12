@@ -1,0 +1,66 @@
+from __future__ import annotations
+
+import json
+import sys
+import unittest
+from pathlib import Path
+
+
+SANDBOX_DIR = Path(__file__).resolve().parents[1]
+PROJECT_DIR = SANDBOX_DIR.parent
+sys.path.insert(0, str(SANDBOX_DIR))
+
+from wiki_renderer import render_wikitext, validate_source  # noqa: E402
+
+
+class WikiSourceTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.config = json.loads((SANDBOX_DIR / "config.json").read_text(encoding="utf-8"))
+
+    def test_every_configured_source_exists_and_validates(self) -> None:
+        for title, filename in self.config["pages"].items():
+            with self.subTest(title=title):
+                path = PROJECT_DIR / "pages" / filename
+                self.assertTrue(path.is_file())
+                self.assertEqual(validate_source(path.read_text(encoding="utf-8")), [])
+
+    def test_every_page_renders_with_local_links(self) -> None:
+        for title, filename in self.config["pages"].items():
+            with self.subTest(title=title):
+                source = (PROJECT_DIR / "pages" / filename).read_text(encoding="utf-8")
+                rendered = render_wikitext(source, link_base="/wiki")
+                self.assertIn("mw-parser-output", f'<div class="mw-parser-output">{rendered.html}</div>')
+                self.assertNotIn("intern.ihf.rwth-aachen.de/wiki/", rendered.html)
+                self.assertTrue(rendered.headings)
+
+    def test_hub_links_to_every_detail_page(self) -> None:
+        main = self.config["main_page"]
+        source = (PROJECT_DIR / "pages" / self.config["pages"][main]).read_text(encoding="utf-8")
+        rendered = render_wikitext(source, link_base="/wiki")
+        for title in self.config["pages"]:
+            if title != main:
+                self.assertIn(title, rendered.links)
+
+    def test_expected_categories_are_present(self) -> None:
+        expected = {
+            "Software Defined Radio (SDR)": {"Hardware", "Software"},
+            "NI USRP-2954R and UBX-160": {"Hardware", "Messtechnik"},
+            "OFDM-based Joint Communication and Sensing (JCAS)": {
+                "Projekte",
+                "Forschungsthemen",
+                "Software",
+            },
+        }
+        for title, categories in expected.items():
+            source = (PROJECT_DIR / "pages" / self.config["pages"][title]).read_text(encoding="utf-8")
+            rendered = render_wikitext(source, link_base="/wiki")
+            self.assertEqual(set(rendered.categories), categories)
+
+    def test_rejects_markdown_backticks_that_mediawiki_would_not_render(self) -> None:
+        self.assertTrue(validate_source("`code`"))
+        self.assertEqual(validate_source("# Valid MediaWiki numbered-list item"), [])
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -1,0 +1,9 @@
+{
+  "site_name": "IHF-Wiki SDR Sandbox",
+  "main_page": "Software Defined Radio (SDR)",
+  "pages": {
+    "Software Defined Radio (SDR)": "Software_Defined_Radio_(SDR).wiki",
+    "NI USRP-2954R and UBX-160": "NI_USRP-2954R_and_UBX-160.wiki",
+    "OFDM-based Joint Communication and Sensing (JCAS)": "OFDM-based_Joint_Communication_and_Sensing_(JCAS).wiki"
+  }
+}

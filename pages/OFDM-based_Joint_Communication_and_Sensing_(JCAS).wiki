@@ -1,0 +1,166 @@
+The '''OFDM-based Joint Communication and Sensing (JCAS) project''' develops a GNU Radio system that uses one OFDM waveform for data communication and environmental sensing. The intended application is a quasi-bistatic automotive scenario in which nodes exchange data while estimating target range and velocity.
+
+{| class="wikitable" style="width:100%; text-align:center;"
+! colspan="3" | SDR documentation
+|-
+| [[Software Defined Radio (SDR)|Overview]]
+| [[NI USRP-2954R and UBX-160|Hardware: NI USRP-2954R and UBX-160]]
+| '''Project: OFDM-based JCAS'''
+|}
+
+__TOC__
+
+== Objectives ==
+
+* Implement an OFDM transmitter and receiver in GNU Radio.
+* Decode the communication payload and evaluate communication performance.
+* Estimate the channel frequency response (CFR), channel impulse response (CIR), and delay-Doppler map (DDM) for sensing.
+* Deploy the processing chain on USRP hardware near 5.8 GHz.
+* Evaluate trade-offs between communication and sensing parameters.
+
+== System architecture ==
+
+The primary USRP uses different UBX-160 daughterboards for transmission and sensing reception. A second receive node represents the communication partner and supports the quasi-bistatic scenario.
+
+<pre>
+Payload -> OFDM transmitter -> channel or RF link -> OFDM receiver -> decoded payload / BER
+                                  |                      |
+                                  |                      +-> received OFDM symbols
+                                  +--------------------------> CFR -> CIR and DDM
+</pre>
+
+The main repository flowgraph is a simulation using a channel model. It does not control the USRP. Hardware measurements require a separate UHD-connected flowgraph and the precautions described on [[NI USRP-2954R and UBX-160]].
+
+== Repository ==
+
+The source code is maintained in the IHF GitLab repository:
+
+* [https://git.rwth-aachen.de/ihf/sdr/jcas-ofdm jcas-ofdm]
+
+{| class="wikitable"
+! Path
+! Purpose
+|-
+| <code>Flow_graphs/OFDMJCAS.grc</code>
+| Primary GNU Radio simulation flowgraph
+|-
+| <code>Flow_graphs/Channel_Model.grc</code>
+| Multipath, delay, Doppler, and noise simulation
+|-
+| <code>Flow_graphs/OFDMJCAStxrx.py</code>
+| Hand-written OFDM transmitter, receiver, synchronization, and equalization blocks
+|-
+| <code>Plots/</code>
+| Real-time CFR, CIR, and linear/dB DDM visualizers
+|-
+| <code>Block_definition/</code>
+| GNU Radio Companion definitions for the custom blocks
+|-
+| <code>Simulation_starter.sh</code> and <code>Simulation_starter.bat</code>
+| Linux and Windows launchers
+|-
+| <code>docs/First_tests.md</code>
+| Hardware and RF verification procedures
+|}
+
+Generated Python flowgraphs and runtime data are not the source of truth. Edit the GRC source or hand-written block, regenerate when required, and do not commit diagnostic captures.
+
+== Software requirements ==
+
+* GNU Radio 3.10; the repository reference version is 3.10.12.0.
+* Python 3 with NumPy, SciPy, pyzmq, PyQt5, pyqtgraph, and SIP.
+* Git for source control.
+* UHD for USRP-connected measurements; UHD is not required for the channel-model-only simulation.
+
+== Running the simulation ==
+
+Clone the repository and run the preflight check before starting the full simulation.
+
+<pre>
+git clone git@git.rwth-aachen.de:ihf/sdr/jcas-ofdm.git
+cd jcas-ofdm
+
+./Simulation_starter.sh --check
+./Simulation_starter.sh
+</pre>
+
+For a Radioconda or Conda installation, activate the environment first. On Windows, configure the Radioconda activation path in <code>Simulation_starter.bat</code> and start that launcher instead.
+
+The run should open the GNU Radio window and separate CFR, CIR, DDM dB, and DDM linear views. Verify that received data and BER update, all plotters receive complete frames, and no process reports import, compilation, port-binding, or vector-size errors.
+
+== Main simulation parameters ==
+
+{| class="wikitable"
+! Parameter
+! Meaning
+|-
+| <code>samp_rate</code>
+| Simulation sample rate; this is not the USRP hardware sample rate
+|-
+| <code>N</code>
+| Number of active OFDM subcarriers
+|-
+| <code>M</code>
+| Number of OFDM symbols per frame
+|-
+| <code>M_crop</code>
+| Number of symbols retained for sensing processing
+|-
+| <code>cp_len</code>
+| Cyclic-prefix length
+|-
+| <code>resol</code>
+| Zero-padding/resolution factor used by the sensing visualizers
+|}
+
+The default simulation uses 100 kS/s. The initial USRP RF tests use a 200 MHz master clock and 100 MS/s. Keep these configurations separate and always state which one a result uses.
+
+== Outputs and evaluation quantities ==
+
+{| class="wikitable"
+! Area
+! Current outputs
+! Additional evaluation quantities
+|-
+| Communication
+| Decoded data and bit error rate (BER)
+| Error vector magnitude, spectral efficiency, and peak-to-average power ratio
+|-
+| Sensing
+| CFR, CIR, and delay-Doppler map
+| Range and Doppler resolution, unambiguous range and Doppler, sidelobe levels, and processing gain
+|}
+
+Do not treat uncalibrated display levels as absolute RF power or radar cross section. Every quantitative result must state its signal path, reference plane, normalization, sample rate, and processing settings.
+
+== Hardware verification ==
+
+The repository test document separates hardware checks from application-level integration:
+
+# USRP and host streaming throughput
+# Transmitter RF-chain characterization
+# Receiver RF-chain characterization
+# Inter-daughterboard synchronization
+# Pure OFDM communication
+# Pure sensing with a static target
+# Joint communication and sensing over the air
+
+Use <code>docs/First_tests.md</code> in the repository for the detailed and current procedures. Store raw results, scripts, and figures with the version-controlled project material rather than duplicating changeable procedures on this overview page.
+
+== Documentation policy ==
+
+This page provides the stable project overview. The GitLab repository remains the source of truth for source code, exact parameters, setup procedures, test status, and results. When behavior changes:
+
+# update and verify the repository documentation;
+# merge the code and documentation together; and
+# update this page only when the architecture, entry points, hardware, or links change.
+
+== Related pages ==
+
+* [[Software Defined Radio (SDR)]]
+* [[NI USRP-2954R and UBX-160]]
+* [[GIT - Versionskontrolle]]
+
+[[Category:Projekte]]
+[[Category:Forschungsthemen]]
+[[Category:Software]]
