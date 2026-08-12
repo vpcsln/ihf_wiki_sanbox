@@ -23,12 +23,15 @@ The server refuses non-loopback bind addresses. It cannot be exposed through `--
 
 - The exact Vector Legacy and site styles served by the IHF Wiki, with the original IHF logo, favicon, MediaWiki badge, and referenced skin images mirrored locally.
 - Browsable SDR hub, USRP hardware, and JCAS project pages.
+- Read-only browsing of the gitignored IHF example-page snapshot under `/reference/`.
 - Local internal links, categories, search, random page, and recent changes.
 - MediaWiki source editor with local preview.
 - Syntax checks for tables, code/pre blocks, and Markdown backticks.
 - Atomic local saves with timestamped backups under `sandbox/backups/`.
 - No third-party Python dependencies.
 - No requests to the IHF Wiki and no live publishing endpoint.
+
+Reference pages are sanitized when fetched and served with a restrictive Content Security Policy. Scripts, forms, frames, embedded objects, and remotely loaded media are not included. If no snapshot is present, the reference index shows the local fetch command instead.
 
 The editable source remains in `pages/*.wiki`. The sandbox renders those files dynamically, so it does not need a build step after an edit.
 

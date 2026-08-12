@@ -72,38 +72,35 @@
     <div id="jump-to-nav"></div>
     <a class="mw-jump-link" href="#mw-head">Zur Navigation springen</a>
     <a class="mw-jump-link" href="#searchInput">Zur Suche springen</a>
-    <div id="mw-content-text" class="mw-body-content mw-content-ltr" lang="en" dir="ltr"><div class="mw-parser-output"><p><strong>Software-defined radio (SDR)</strong> implements radio functions such as modulation, filtering, synchronization, and demodulation in software while retaining a configurable RF front end. This page is the entry point for SDR hardware, software, and projects at IHF.</p>
-<table class="wikitable" style="width:100%; text-align:center;"><tr><th colspan="3">SDR documentation</th></tr><tr><td><strong>Overview</strong></td><td><a href="NI_USRP-2954R_and_UBX-160.html">Hardware: NI USRP-2954R and UBX-160</a></td><td><a href="OFDM-based_Joint_Communication_and_Sensing_(JCAS).html">Project: OFDM-based JCAS</a></td></tr></table>
-<nav class="toc"><div class="toctitle">Inhaltsverzeichnis</div><ol><li style="margin-left:0.0em"><a href="#Overview">Overview</a></li><li style="margin-left:0.0em"><a href="#Hardware">Hardware</a></li><li style="margin-left:1.25em"><a href="#IHF_SDR_platforms">IHF SDR platforms</a></li><li style="margin-left:0.0em"><a href="#Software">Software</a></li><li style="margin-left:0.0em"><a href="#Projects">Projects</a></li><li style="margin-left:0.0em"><a href="#General_RF_practice">General RF practice</a></li><li style="margin-left:0.0em"><a href="#External_documentation">External documentation</a></li><li style="margin-left:0.0em"><a href="#Related_pages">Related pages</a></li></ol></nav>
+    <div id="mw-content-text" class="mw-body-content mw-content-ltr" lang="en" dir="ltr"><div class="mw-parser-output"><p><strong>Software-defined radio (SDR)</strong> moves functions such as modulation, filtering, synchronization, and demodulation from fixed radio hardware into software. A configurable RF front end still converts between radio-frequency signals and digital samples.</p>
+<table class="wikitable" style="width:100%; text-align:center;"><tr><th colspan="3">SDR documentation</th></tr><tr><td><strong>SDR overview</strong></td><td><a href="NI_USRP-2954R.html">Hardware: NI USRP-2954R</a></td><td><a href="OFDM-based_Joint_Communication_and_Sensing_(JCAS).html">Project: OFDM-based JCAS</a></td></tr></table>
+<nav class="toc"><div class="toctitle">Inhaltsverzeichnis</div><ol><li style="margin-left:0.0em"><a href="#Overview">Overview</a></li><li style="margin-left:0.0em"><a href="#Hardware">Hardware</a></li><li style="margin-left:1.25em"><a href="#NI_USRP_2954R">NI USRP-2954R</a></li><li style="margin-left:2.5em"><a href="#Project_on_this_platform">Project on this platform</a></li><li style="margin-left:0.0em"><a href="#Software">Software</a></li><li style="margin-left:0.0em"><a href="#General_RF_practice">General RF practice</a></li><li style="margin-left:0.0em"><a href="#External_documentation">External documentation</a></li><li style="margin-left:0.0em"><a href="#Related_pages">Related pages</a></li></ol></nav>
 <h2 id="Overview">Overview</h2>
-<p>An SDR system normally consists of:</p>
-<table class="wikitable"><tr><th>Part</th><th>Purpose</th></tr><tr><td>RF front end</td><td>Converts between the antenna frequency and analog baseband or an intermediate frequency.</td></tr><tr><td>ADC and DAC</td><td>Convert between analog signals and digital samples.</td></tr><tr><td>FPGA</td><td>Performs time-critical processing such as interpolation, decimation, filtering, and sample transport.</td></tr><tr><td>Host interface</td><td>Transfers samples and control data between the SDR and the host computer, for example through 10 Gigabit Ethernet.</td></tr><tr><td>Driver and signal-processing software</td><td>Configures the radio and implements the application. IHF currently uses UHD and GNU Radio for the USRP platform described below.</td></tr></table>
-<pre>Receive:  Antenna/RF input -&gt; RF front end -&gt; ADC -&gt; FPGA -&gt; host interface -&gt; application
-Transmit: Application -&gt; host interface -&gt; FPGA -&gt; DAC -&gt; RF front end -&gt; antenna/RF output</pre>
-<p>The usable bandwidth and sample rate are limited by the complete chain: RF front end, converters, FPGA configuration, host interface, and host processing capacity.</p>
+<p>A typical SDR separates the radio into a configurable hardware path and an application running on a host computer.</p>
+<pre>Receive: RF input -&gt; RF front end -&gt; ADC -&gt; FPGA -&gt; host interface -&gt; application
+Transmit: Application -&gt; host interface -&gt; FPGA -&gt; DAC -&gt; RF front end -&gt; RF output</pre>
+<p>The usable frequency range, bandwidth, and sample rate depend on the complete path. The RF front end, converters, FPGA configuration, host connection, and signal-processing workload must all support the selected operating point.</p>
 <h2 id="Hardware">Hardware</h2>
-<h3 id="IHF_SDR_platforms">IHF SDR platforms</h3>
-<table class="wikitable"><tr><th>Platform</th><th>Frequency range</th><th>Main use</th><th>Documentation</th></tr><tr><td>NI USRP-2954R with two UBX-160 daughterboards</td><td>10 MHz to 6 GHz</td><td>Wideband development, communication, radar, and joint communication and sensing</td><td><a href="NI_USRP-2954R_and_UBX-160.html">NI USRP-2954R and UBX-160</a></td></tr></table>
-<p>Add further IHF SDR platforms to this table and document device-specific setup and safety information on a separate hardware page.</p>
+<h3 id="NI_USRP_2954R">NI USRP-2954R</h3>
+<p>The <a href="NI_USRP-2954R.html">NI USRP-2954R</a> is the documented IHF platform for wideband SDR work in the 10 MHz to 6 GHz range. The installed unit has two UBX-160 daughterboards and a dual-10-Gigabit-Ethernet host connection. Its hardware page contains the connector mapping, network setup, startup checks, and RF limits.</p>
+<h4 id="Project_on_this_platform">Project on this platform</h4>
+<p>The <a href="OFDM-based_Joint_Communication_and_Sensing_(JCAS).html">OFDM-based Joint Communication and Sensing project</a> uses the USRP-2954R to develop a shared OFDM waveform for data transmission and environmental sensing.</p>
 <h2 id="Software">Software</h2>
 <p>The current USRP workflow uses:</p>
 <ul>
 <li><strong>UHD</strong> to discover, configure, and stream samples to and from the USRP;</li>
-<li><strong>GNU Radio</strong> to build and run signal-processing flowgraphs;</li>
-<li><strong>Python</strong> for custom GNU Radio blocks, automation, and result visualization; and</li>
-<li><strong>Git</strong> for version-controlled project development. See <a href="/wiki/GIT_-_Versionskontrolle">GIT - Versionskontrolle</a>.</li>
+<li><strong>GNU Radio</strong> to assemble and run signal-processing flowgraphs;</li>
+<li><strong>Python</strong> for custom GNU Radio blocks, automation, and visualisation; and</li>
+<li><strong>Git</strong> for version-controlled development. See <a href="/wiki/GIT_-_Versionskontrolle">GIT - Versionskontrolle</a>.</li>
 </ul>
-<p>Keep reusable installation and troubleshooting guidance on the hardware page. Keep project algorithms, parameters, results, and source-code instructions on the corresponding project page or in its repository.</p>
-<h2 id="Projects">Projects</h2>
-<table class="wikitable"><tr><th>Project</th><th>Purpose</th><th>Hardware</th><th>Documentation</th></tr><tr><td>OFDM-based Joint Communication and Sensing</td><td>Simultaneous communication and environmental sensing using an OFDM waveform</td><td>NI USRP-2954R with UBX-160 daughterboards</td><td><a href="OFDM-based_Joint_Communication_and_Sensing_(JCAS).html">OFDM-based Joint Communication and Sensing (JCAS)</a></td></tr></table>
+<p>Device-specific setup belongs on the hardware page. Algorithms, parameters, results, and source-code instructions belong on the relevant project page or in its repository.</p>
 <h2 id="General_RF_practice">General RF practice</h2>
 <ul>
-<li>Check the frequency, power, impedance, and connector ratings of every component before connecting it.</li>
+<li>Check the frequency, power, impedance, and connector ratings of every component before making a connection.</li>
 <li>Use suitable attenuation and 50-ohm terminations for conducted measurements.</li>
-<li>Keep RF outputs disabled while changing cables or instruments.</li>
-<li>Never exceed the maximum input level of an SDR or measurement instrument.</li>
-<li>Do not infer RF channel or connector mappings from Ethernet ports. Record the mapping reported by the driver.</li>
-<li>Record hardware identifiers, software versions, clock and sample rates, center frequency, gain, bandwidth, and runtime warnings with every measurement.</li>
+<li>Disable RF outputs before changing cables or instruments.</li>
+<li>Never exceed the input limit of an SDR or measurement instrument.</li>
+<li>Record hardware identifiers, software versions, clock and sample rates, centre frequency, gain, bandwidth, connector mapping, and runtime warnings with every measurement.</li>
 </ul>
 <h2 id="External_documentation">External documentation</h2>
 <ul>
@@ -113,7 +110,7 @@ Transmit: Application -&gt; host interface -&gt; FPGA -&gt; DAC -&gt; RF front e
 </ul>
 <h2 id="Related_pages">Related pages</h2>
 <ul>
-<li><a href="NI_USRP-2954R_and_UBX-160.html">NI USRP-2954R and UBX-160</a></li>
+<li><a href="NI_USRP-2954R.html">NI USRP-2954R</a></li>
 <li><a href="OFDM-based_Joint_Communication_and_Sensing_(JCAS).html">OFDM-based Joint Communication and Sensing (JCAS)</a></li>
 <li><a href="/wiki/GIT_-_Versionskontrolle">GIT - Versionskontrolle</a></li>
 </ul><div class="catlinks"><strong>Kategorien:</strong> <a href="/wiki/Kategorie%3AHardware">Hardware</a> <span aria-hidden="true">|</span> <a href="/wiki/Kategorie%3ASoftware">Software</a></div></div></div>
@@ -180,6 +177,7 @@ Transmit: Application -&gt; host interface -&gt; FPGA -&gt; DAC -&gt; RF front e
       <div class="vector-menu-content">
         <ul class="vector-menu-content-list">
           <li class="mw-list-item"><a href="Software_Defined_Radio_(SDR).html">SDR-Hauptseite</a></li>
+          <li class="mw-list-item"><a href="/reference/">IHF-Wiki-Beispiele</a></li>
           <li class="mw-list-item"><a href="/wiki/Spezial:Letzte_%C3%84nderungen">Letzte Änderungen</a></li>
           <li class="mw-list-item"><a href="/wiki/Spezial:Zuf%C3%A4llige_Seite">Zufällige Seite</a></li>
         </ul>
@@ -188,7 +186,7 @@ Transmit: Application -&gt; host interface -&gt; FPGA -&gt; DAC -&gt; RF front e
 
     <nav id="p-sdr" class="mw-portlet mw-portlet-sdr vector-menu vector-menu-portal portal" aria-labelledby="p-sdr-label" role="navigation">
       <h3 id="p-sdr-label" class="vector-menu-heading"><span>SDR-Dokumentation</span></h3>
-      <div class="vector-menu-content"><ul><li><a href="Software_Defined_Radio_(SDR).html">Software Defined Radio (SDR)</a></li><li><a href="NI_USRP-2954R_and_UBX-160.html">NI USRP-2954R and UBX-160</a></li><li><a href="OFDM-based_Joint_Communication_and_Sensing_(JCAS).html">OFDM-based Joint Communication and Sensing (JCAS)</a></li></ul></div>
+      <div class="vector-menu-content"><ul><li><a href="Software_Defined_Radio_(SDR).html">Software Defined Radio (SDR)</a></li><li><a href="NI_USRP-2954R.html">NI USRP-2954R</a></li><li><a href="OFDM-based_Joint_Communication_and_Sensing_(JCAS).html">OFDM-based Joint Communication and Sensing (JCAS)</a></li></ul></div>
     </nav>
 
     <nav id="p-tb" class="mw-portlet mw-portlet-tb vector-menu vector-menu-portal portal" aria-labelledby="p-tb-label" role="navigation">

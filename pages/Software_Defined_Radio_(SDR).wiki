@@ -1,10 +1,10 @@
-'''Software-defined radio (SDR)''' implements radio functions such as modulation, filtering, synchronization, and demodulation in software while retaining a configurable RF front end. This page is the entry point for SDR hardware, software, and projects at IHF.
+'''Software-defined radio (SDR)''' moves functions such as modulation, filtering, synchronization, and demodulation from fixed radio hardware into software. A configurable RF front end still converts between radio-frequency signals and digital samples.
 
 {| class="wikitable" style="width:100%; text-align:center;"
 ! colspan="3" | SDR documentation
 |-
-| '''Overview'''
-| [[NI USRP-2954R and UBX-160|Hardware: NI USRP-2954R and UBX-160]]
+| '''SDR overview'''
+| [[NI USRP-2954R|Hardware: NI USRP-2954R]]
 | [[OFDM-based Joint Communication and Sensing (JCAS)|Project: OFDM-based JCAS]]
 |}
 
@@ -12,86 +12,43 @@ __TOC__
 
 == Overview ==
 
-An SDR system normally consists of:
-
-{| class="wikitable"
-! Part
-! Purpose
-|-
-| RF front end
-| Converts between the antenna frequency and analog baseband or an intermediate frequency.
-|-
-| ADC and DAC
-| Convert between analog signals and digital samples.
-|-
-| FPGA
-| Performs time-critical processing such as interpolation, decimation, filtering, and sample transport.
-|-
-| Host interface
-| Transfers samples and control data between the SDR and the host computer, for example through 10 Gigabit Ethernet.
-|-
-| Driver and signal-processing software
-| Configures the radio and implements the application. IHF currently uses UHD and GNU Radio for the USRP platform described below.
-|}
+A typical SDR separates the radio into a configurable hardware path and an application running on a host computer.
 
 <pre>
-Receive:  Antenna/RF input -> RF front end -> ADC -> FPGA -> host interface -> application
-Transmit: Application -> host interface -> FPGA -> DAC -> RF front end -> antenna/RF output
+Receive: RF input -> RF front end -> ADC -> FPGA -> host interface -> application
+Transmit: Application -> host interface -> FPGA -> DAC -> RF front end -> RF output
 </pre>
 
-The usable bandwidth and sample rate are limited by the complete chain: RF front end, converters, FPGA configuration, host interface, and host processing capacity.
+The usable frequency range, bandwidth, and sample rate depend on the complete path. The RF front end, converters, FPGA configuration, host connection, and signal-processing workload must all support the selected operating point.
 
 == Hardware ==
 
-=== IHF SDR platforms ===
+=== NI USRP-2954R ===
 
-{| class="wikitable"
-! Platform
-! Frequency range
-! Main use
-! Documentation
-|-
-| NI USRP-2954R with two UBX-160 daughterboards
-| 10 MHz to 6 GHz
-| Wideband development, communication, radar, and joint communication and sensing
-| [[NI USRP-2954R and UBX-160]]
-|}
+The [[NI USRP-2954R]] is the documented IHF platform for wideband SDR work in the 10 MHz to 6 GHz range. The installed unit has two UBX-160 daughterboards and a dual-10-Gigabit-Ethernet host connection. Its hardware page contains the connector mapping, network setup, startup checks, and RF limits.
 
-Add further IHF SDR platforms to this table and document device-specific setup and safety information on a separate hardware page.
+==== Project on this platform ====
+
+The [[OFDM-based Joint Communication and Sensing (JCAS)|OFDM-based Joint Communication and Sensing project]] uses the USRP-2954R to develop a shared OFDM waveform for data transmission and environmental sensing.
 
 == Software ==
 
 The current USRP workflow uses:
 
 * '''UHD''' to discover, configure, and stream samples to and from the USRP;
-* '''GNU Radio''' to build and run signal-processing flowgraphs;
-* '''Python''' for custom GNU Radio blocks, automation, and result visualization; and
-* '''Git''' for version-controlled project development. See [[GIT - Versionskontrolle]].
+* '''GNU Radio''' to assemble and run signal-processing flowgraphs;
+* '''Python''' for custom GNU Radio blocks, automation, and visualisation; and
+* '''Git''' for version-controlled development. See [[GIT - Versionskontrolle]].
 
-Keep reusable installation and troubleshooting guidance on the hardware page. Keep project algorithms, parameters, results, and source-code instructions on the corresponding project page or in its repository.
-
-== Projects ==
-
-{| class="wikitable"
-! Project
-! Purpose
-! Hardware
-! Documentation
-|-
-| OFDM-based Joint Communication and Sensing
-| Simultaneous communication and environmental sensing using an OFDM waveform
-| NI USRP-2954R with UBX-160 daughterboards
-| [[OFDM-based Joint Communication and Sensing (JCAS)]]
-|}
+Device-specific setup belongs on the hardware page. Algorithms, parameters, results, and source-code instructions belong on the relevant project page or in its repository.
 
 == General RF practice ==
 
-* Check the frequency, power, impedance, and connector ratings of every component before connecting it.
+* Check the frequency, power, impedance, and connector ratings of every component before making a connection.
 * Use suitable attenuation and 50-ohm terminations for conducted measurements.
-* Keep RF outputs disabled while changing cables or instruments.
-* Never exceed the maximum input level of an SDR or measurement instrument.
-* Do not infer RF channel or connector mappings from Ethernet ports. Record the mapping reported by the driver.
-* Record hardware identifiers, software versions, clock and sample rates, center frequency, gain, bandwidth, and runtime warnings with every measurement.
+* Disable RF outputs before changing cables or instruments.
+* Never exceed the input limit of an SDR or measurement instrument.
+* Record hardware identifiers, software versions, clock and sample rates, centre frequency, gain, bandwidth, connector mapping, and runtime warnings with every measurement.
 
 == External documentation ==
 
@@ -101,7 +58,7 @@ Keep reusable installation and troubleshooting guidance on the hardware page. Ke
 
 == Related pages ==
 
-* [[NI USRP-2954R and UBX-160]]
+* [[NI USRP-2954R]]
 * [[OFDM-based Joint Communication and Sensing (JCAS)]]
 * [[GIT - Versionskontrolle]]
 

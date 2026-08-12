@@ -1,0 +1,235 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-08-12T14:58:57.103287+00:00",
+  "project_repository": "jcas-ofdm",
+  "project_revision": "b95f0c49f7e54ba10c93670933c3e0a7c48c805d",
+  "automatic_check_count": 56,
+  "automatic_checks": [
+    {
+      "name": "Linux reference launcher values",
+      "status": "passed"
+    },
+    {
+      "name": "Windows reference launcher values",
+      "status": "passed"
+    },
+    {
+      "name": "115 data and 12 pilot carriers",
+      "status": "passed"
+    },
+    {
+      "name": "Pilot carrier indices",
+      "status": "passed"
+    },
+    {
+      "name": "Main GRC parameter header_mod: '\"QPSK\"'",
+      "status": "passed"
+    },
+    {
+      "name": "Main GRC parameter payload_mod: '\"QPSK\"'",
+      "status": "passed"
+    },
+    {
+      "name": "Main GRC parameter scramble_bits: 'False'",
+      "status": "passed"
+    },
+    {
+      "name": "ZMQ loopback port 5555",
+      "status": "passed"
+    },
+    {
+      "name": "ZMQ loopback port 5556",
+      "status": "passed"
+    },
+    {
+      "name": "ZMQ loopback port 5557",
+      "status": "passed"
+    },
+    {
+      "name": "ZMQ loopback port 5558",
+      "status": "passed"
+    },
+    {
+      "name": "No uhd_usrp_source in main graph",
+      "status": "passed"
+    },
+    {
+      "name": "No uhd_usrp_sink in main graph",
+      "status": "passed"
+    },
+    {
+      "name": "No uhd_usrp in main graph",
+      "status": "passed"
+    },
+    {
+      "name": "Receiver two-input signature",
+      "status": "passed"
+    },
+    {
+      "name": "Receiver three-output signature",
+      "status": "passed"
+    },
+    {
+      "name": "Synchroniser threshold",
+      "status": "passed"
+    },
+    {
+      "name": "Payload equaliser alpha",
+      "status": "passed"
+    },
+    {
+      "name": "Zadoff-Chu preamble",
+      "status": "passed"
+    },
+    {
+      "name": "Channel value delay: '0'",
+      "status": "passed"
+    },
+    {
+      "name": "Channel value delay: '20'",
+      "status": "passed"
+    },
+    {
+      "name": "Channel value delay: '40'",
+      "status": "passed"
+    },
+    {
+      "name": "Channel value freq: '100'",
+      "status": "passed"
+    },
+    {
+      "name": "Channel value freq: '200'",
+      "status": "passed"
+    },
+    {
+      "name": "Channel value amp: '0.001'",
+      "status": "passed"
+    },
+    {
+      "name": "Channel model fixed rate",
+      "status": "passed"
+    },
+    {
+      "name": "Receiver test status",
+      "status": "passed"
+    },
+    {
+      "name": "Synchronisation test status",
+      "status": "passed"
+    },
+    {
+      "name": "Hardware communication execution",
+      "status": "passed"
+    },
+    {
+      "name": "Legacy receiver ID",
+      "status": "passed"
+    },
+    {
+      "name": "Legacy receiver class",
+      "status": "passed"
+    },
+    {
+      "name": "Receiver definition omits float input",
+      "status": "passed"
+    },
+    {
+      "name": "Legacy transmitter ID",
+      "status": "passed"
+    },
+    {
+      "name": "Linux repairs receiver definition",
+      "status": "passed"
+    },
+    {
+      "name": "Linux repairs legacy class",
+      "status": "passed"
+    },
+    {
+      "name": "Public-source privacy: NI_USRP-2954R.wiki: Docs/",
+      "status": "passed"
+    },
+    {
+      "name": "Public-source privacy: NI_USRP-2954R.wiki: Docs.zip",
+      "status": "passed"
+    },
+    {
+      "name": "Public-source privacy: NI_USRP-2954R.wiki: First tests.docx",
+      "status": "passed"
+    },
+    {
+      "name": "Public-source privacy: NI_USRP-2954R.wiki: project_facts.txt",
+      "status": "passed"
+    },
+    {
+      "name": "Public-source privacy: NI_USRP-2954R.wiki: /home/",
+      "status": "passed"
+    },
+    {
+      "name": "Public-source privacy: OFDM-based_Joint_Communication_and_Sensing_(JCAS).wiki: Docs/",
+      "status": "passed"
+    },
+    {
+      "name": "Public-source privacy: OFDM-based_Joint_Communication_and_Sensing_(JCAS).wiki: Docs.zip",
+      "status": "passed"
+    },
+    {
+      "name": "Public-source privacy: OFDM-based_Joint_Communication_and_Sensing_(JCAS).wiki: First tests.docx",
+      "status": "passed"
+    },
+    {
+      "name": "Public-source privacy: OFDM-based_Joint_Communication_and_Sensing_(JCAS).wiki: project_facts.txt",
+      "status": "passed"
+    },
+    {
+      "name": "Public-source privacy: OFDM-based_Joint_Communication_and_Sensing_(JCAS).wiki: /home/",
+      "status": "passed"
+    },
+    {
+      "name": "Public-source privacy: Software_Defined_Radio_(SDR).wiki: Docs/",
+      "status": "passed"
+    },
+    {
+      "name": "Public-source privacy: Software_Defined_Radio_(SDR).wiki: Docs.zip",
+      "status": "passed"
+    },
+    {
+      "name": "Public-source privacy: Software_Defined_Radio_(SDR).wiki: First tests.docx",
+      "status": "passed"
+    },
+    {
+      "name": "Public-source privacy: Software_Defined_Radio_(SDR).wiki: project_facts.txt",
+      "status": "passed"
+    },
+    {
+      "name": "Public-source privacy: Software_Defined_Radio_(SDR).wiki: /home/",
+      "status": "passed"
+    },
+    {
+      "name": "Project-page distinction: there are no UHD Source or UHD Sink blocks",
+      "status": "passed"
+    },
+    {
+      "name": "Project-page distinction: two inputs and three outputs",
+      "status": "passed"
+    },
+    {
+      "name": "Project-page distinction: 100000 samples/s",
+      "status": "passed"
+    },
+    {
+      "name": "Project-page distinction: 200 MHz USRP master clock",
+      "status": "passed"
+    },
+    {
+      "name": "Project-page distinction: labels the axis as velocity in m/s",
+      "status": "passed"
+    },
+    {
+      "name": "Project-page distinction: No CFAR or other target detector",
+      "status": "passed"
+    }
+  ],
+  "manual_evidence_ledger": "SOURCE_MAP.md",
+  "status": "passed"
+}

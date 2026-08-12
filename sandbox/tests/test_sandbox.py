@@ -45,7 +45,7 @@ class WikiSourceTests(unittest.TestCase):
     def test_expected_categories_are_present(self) -> None:
         expected = {
             "Software Defined Radio (SDR)": {"Hardware", "Software"},
-            "NI USRP-2954R and UBX-160": {"Hardware", "Messtechnik"},
+            "NI USRP-2954R": {"Hardware", "Messtechnik"},
             "OFDM-based Joint Communication and Sensing (JCAS)": {
                 "Projekte",
                 "Forschungsthemen",
@@ -56,6 +56,57 @@ class WikiSourceTests(unittest.TestCase):
             source = (PROJECT_DIR / "pages" / self.config["pages"][title]).read_text(encoding="utf-8")
             rendered = render_wikitext(source, link_base="/wiki")
             self.assertEqual(set(rendered.categories), categories)
+
+    def test_three_level_hierarchy_is_linked_in_both_directions(self) -> None:
+        titles = tuple(self.config["pages"])
+        self.assertEqual(
+            titles,
+            (
+                "Software Defined Radio (SDR)",
+                "NI USRP-2954R",
+                "OFDM-based Joint Communication and Sensing (JCAS)",
+            ),
+        )
+        for title, filename in self.config["pages"].items():
+            source = (PROJECT_DIR / "pages" / filename).read_text(encoding="utf-8")
+            rendered = render_wikitext(source, link_base="/wiki")
+            with self.subTest(title=title):
+                for related_title in titles:
+                    if related_title != title:
+                        self.assertIn(related_title, rendered.links)
+
+    def test_public_pages_do_not_expose_local_research_files(self) -> None:
+        forbidden = (
+            "Docs/",
+            "Docs.zip",
+            "First tests.docx",
+            "project_facts.txt",
+            "/home/",
+        )
+        for title, filename in self.config["pages"].items():
+            source = (PROJECT_DIR / "pages" / filename).read_text(encoding="utf-8")
+            with self.subTest(title=title):
+                for value in forbidden:
+                    self.assertNotIn(value, source)
+
+    def test_critical_project_distinctions_remain_explicit(self) -> None:
+        project_source = (
+            PROJECT_DIR
+            / "pages"
+            / self.config["pages"]["OFDM-based Joint Communication and Sensing (JCAS)"]
+        ).read_text(encoding="utf-8")
+        required = (
+            "there are no UHD Source or UHD Sink blocks",
+            "two inputs and three outputs",
+            "100000 samples/s",
+            "200 MHz USRP master clock",
+            "Target detection",
+            "Not implemented",
+            "labels the axis as velocity in m/s",
+        )
+        for value in required:
+            with self.subTest(value=value):
+                self.assertIn(value, project_source)
 
     def test_rejects_markdown_backticks_that_mediawiki_would_not_render(self) -> None:
         self.assertTrue(validate_source("`code`"))

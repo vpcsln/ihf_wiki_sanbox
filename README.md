@@ -5,7 +5,7 @@ This folder contains MediaWiki source for three linked IHF wiki pages:
 | File | Wiki page title |
 |---|---|
 | `pages/Software_Defined_Radio_(SDR).wiki` | `Software Defined Radio (SDR)` |
-| `pages/NI_USRP-2954R_and_UBX-160.wiki` | `NI USRP-2954R and UBX-160` |
+| `pages/NI_USRP-2954R.wiki` | `NI USRP-2954R` |
 | `pages/OFDM-based_Joint_Communication_and_Sensing_(JCAS).wiki` | `OFDM-based Joint Communication and Sensing (JCAS)` |
 
 The IHF MediaWiki does not enable subpages in its main namespace. The drafts therefore use standalone titles with explicit navigation links instead of slash-based titles.
@@ -21,8 +21,11 @@ ihf_wiki_sdr_jcas/
 ├── assets/       # Images or diagrams to upload later
 ├── pages/        # Editable MediaWiki source
 ├── previews/     # Generated HTML and screenshot previews
+├── reference/    # Local-only IHF Wiki example corpus tooling
 ├── render_previews.py
-└── sandbox/      # Local browsable wiki and editor
+├── sandbox/      # Local browsable wiki and editor
+├── validate_sources.py
+└── validation/   # Generated project-source verification report
 ```
 
 ## Browse and edit in the local sandbox
@@ -49,6 +52,27 @@ The local renderer covers the syntax used by these drafts but is not a complete 
 
 The HTML files under `previews/` are generated previews and should not be edited directly.
 
+## Verify project-specific claims
+
+With the `jcas-ofdm` checkout beside this directory, compare the high-risk implementation claims with its current source files:
+
+```bash
+python3 validate_sources.py
+```
+
+This checks launcher values, carrier maps, stream signatures, channel parameters, ZMQ ports, test-status wording, legacy block-definition handling, and the public/private documentation boundary. It writes `validation/source-report.json`. Manufacturer specifications and prose-level judgements remain recorded in `SOURCE_MAP.md` and require human review.
+
+## Local IHF Wiki examples
+
+The read-only reference downloader collects current pages from the IHF Wiki's Hardware, Software, Messtechnik, and Forschungsthemen categories. Page bodies are stored only in the gitignored local snapshot; they are never pushed to GitHub.
+
+```bash
+python3 reference/ihf_wiki_examples/sync.py fetch
+python3 reference/ihf_wiki_examples/sync.py verify
+```
+
+When present, the snapshot is available from the sandbox under `/reference/`.
+
 ## Private GitHub repository
 
 This folder is maintained in the private GitHub repository `ihf_wiki_sanbox`. Keep the repository private: the drafts contain internal network configuration and IHF-specific project information. Do not add passwords, wiki session cookies, access tokens, or other credentials even to the private repository.
@@ -66,7 +90,7 @@ Publishing is intentionally manual. The scripts in this folder never authenticat
 
 Suggested edit URLs:
 
-- `http://intern.ihf.rwth-aachen.de/wiki/index.php?title=NI_USRP-2954R_and_UBX-160&action=edit`
+- `http://intern.ihf.rwth-aachen.de/wiki/index.php?title=NI_USRP-2954R&action=edit`
 - `http://intern.ihf.rwth-aachen.de/wiki/index.php?title=OFDM-based_Joint_Communication_and_Sensing_(JCAS)&action=edit`
 - `http://intern.ihf.rwth-aachen.de/wiki/index.php?title=Software_Defined_Radio_(SDR)&action=edit`
 

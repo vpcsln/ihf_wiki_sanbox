@@ -1,80 +1,276 @@
-The '''OFDM-based Joint Communication and Sensing (JCAS) project''' develops a GNU Radio system that uses one OFDM waveform for data communication and environmental sensing. The intended application is a quasi-bistatic automotive scenario in which nodes exchange data while estimating target range and velocity.
+The '''OFDM-based Joint Communication and Sensing (JCAS) project''' develops a GNU Radio system in which one OFDM waveform carries data and provides channel measurements for sensing. The intended application is a quasi-bistatic automotive scenario with a transmitting and sensing node and a separate communication receiver.
 
 {| class="wikitable" style="width:100%; text-align:center;"
 ! colspan="3" | SDR documentation
 |-
-| [[Software Defined Radio (SDR)|Overview]]
-| [[NI USRP-2954R and UBX-160|Hardware: NI USRP-2954R and UBX-160]]
+| [[Software Defined Radio (SDR)|SDR overview]]
+| [[NI USRP-2954R|Hardware: NI USRP-2954R]]
 | '''Project: OFDM-based JCAS'''
 |}
 
 __TOC__
 
-== Objectives ==
+== Project scope and status ==
 
-* Implement an OFDM transmitter and receiver in GNU Radio.
-* Decode the communication payload and evaluate communication performance.
-* Estimate the channel frequency response (CFR), channel impulse response (CIR), and delay-Doppler map (DDM) for sensing.
-* Deploy the processing chain on USRP hardware near 5.8 GHz.
-* Evaluate trade-offs between communication and sensing parameters.
+The project covers an OFDM communication link, channel-response processing for sensing, and deployment on the [[NI USRP-2954R]]. The current repository contains a reproducible channel-model simulation. Hardware adaptation and quantitative sensing validation remain separate development tasks.
 
-== System architecture ==
+{| class="wikitable"
+! Area
+! Current status
+! Evidence or boundary
+|-
+| OFDM simulation
+| Implemented
+| Custom transmitter and receiver, simulated multipath channel, decoded-data view, cumulative BER, CFR, CIR, and two DDM views are present in the main flowgraph.
+|-
+| Launch and maintenance workflow
+| Implemented
+| Windows and Linux launchers are present; the Linux launcher includes a preflight and compilation check.
+|-
+| Basic USRP operation
+| Performed
+| Host streaming and the project-relevant one-TX/one-RX configuration have been exercised.
+|-
+| Transmitter and receiver checks near 5.8 GHz
+| Performed on both daughterboards
+| The project records the checks as performed, but complete quantitative result tables are not available for every measurement.
+|-
+| Pure OFDM communication on hardware
+| Performed
+| The hardware run also exercised one transmit and one receive stream.
+|-
+| Inter-daughterboard synchronisation
+| Not demonstrated
+| The corresponding test is recorded as not performed.
+|-
+| Static-target sensing and joint over-the-air operation
+| Planned; no completed result set documented
+| Procedures exist, but the repository does not contain a validated end-to-end result set.
+|-
+| Target detection
+| Not implemented
+| No CFAR or other target detector is present in the current main flowgraph.
+|}
 
-The primary USRP uses different UBX-160 daughterboards for transmission and sensing reception. A second receive node represents the communication partner and supports the quasi-bistatic scenario.
+“Performed” in this table reports the project record; it is not a substitute for measurement data. Use the repository history and test records when a numerical result or completion decision is required.
+
+== Intended system architecture ==
+
+The planned primary node uses one UBX-160 daughterboard for transmission and the other for sensing reception. A second USRP acts as the communication receiver; its exact hardware configuration is not defined in the current repository. Both daughterboards on the primary USRP have been checked in transmit and receive configurations. Their final roles should be assigned only after comparable measurements have been recorded.
 
 <pre>
-Payload -> OFDM transmitter -> channel or RF link -> OFDM receiver -> decoded payload / BER
-                                  |                      |
-                                  |                      +-> received OFDM symbols
-                                  +--------------------------> CFR -> CIR and DDM
+Primary node                                  Communication node
+
+payload -> OFDM TX -> RF waveform -----------------------------> OFDM RX -> payload
+                       |
+                       +-> target / propagation -> sensing RX -> CFR -> CIR / DDM
 </pre>
 
-The main repository flowgraph is a simulation using a channel model. It does not control the USRP. Hardware measurements require a separate UHD-connected flowgraph and the precautions described on [[NI USRP-2954R and UBX-160]].
+The main repository flowgraph does not yet implement this complete hardware diagram. It connects the transmitter to a software channel model and then to one receiver; there are no UHD Source or UHD Sink blocks in that graph.
 
-== Repository ==
+== Why OFDM can support both functions ==
 
-The source code is maintained in the IHF GitLab repository:
+OFDM divides the occupied bandwidth among orthogonal subcarriers. Data symbols are transmitted in parallel, while known preambles and pilots support synchronisation and channel estimation. A cyclic prefix copies the end of each OFDM symbol to its beginning, which reduces inter-symbol interference when it is longer than the relevant channel delay spread.
 
-* [https://git.rwth-aachen.de/ihf/sdr/jcas-ofdm jcas-ofdm]
+For communication, the receiver estimates the channel, equalises the data carriers, and decodes the payload. For sensing, the same received frame is compared with an estimate of the transmitted subcarrier symbols. Variation across subcarriers represents delay-dependent channel structure; variation across successive OFDM symbols represents Doppler-dependent structure. The two branches therefore reuse the same waveform, but they need different validation criteria.
+
+== Current simulation signal chain ==
+
+<pre>
+repeating byte ramp -> packet tagging -> OFDM transmitter -> channel model -> OFDM receiver
+        |                                                           |
+        +-------------------- transmitted PDU -----------------------+-> decoded PDU -> BER
+                                                                    |
+                                                                    +-> active-carrier symbols
+                                                                         -> CFR -> CIR / DDM
+</pre>
+
+The reference launchers generate seven repetitions of the byte values 0 to 255, giving a 1792-byte payload. A Throttle block controls the software-only simulation. It must be removed when the graph is replaced by hardware sources or sinks.
+
+=== OFDM frame ===
+
+The transmitter uses a 128-point inverse FFT. Of the 128 bins, 127 are active: 115 carry header or payload data and 12 are pilots. The Nyquist bin is unused. The current pilot bins are -55, -45, -35, -25, -15, -5, 5, 15, 25, 35, 45, and 55, with pilot value 1.
+
+Both header and payload use QPSK, and scrambling is disabled in the main flowgraph. The frame begins with two synchronisation words:
+
+* the first is a Zadoff–Chu sequence placed on alternating active carriers, producing the repeated time-domain halves used by the synchroniser; and
+* the second is a fixed-seed BPSK sequence used for channel estimation.
+
+After the header and payload symbols are assigned to carriers, the transmitter performs the inverse FFT and adds the cyclic prefix.
+
+=== Simulated channel ===
+
+<code>Flow_graphs/Channel_Model.grc</code> adds three copies of the signal and complex Gaussian noise. The direct copy has zero delay and scale factor 1. The other copies are delayed by 20 and 40 samples, scaled by 0.2, and multiplied by 200 Hz and 100 Hz complex sources respectively. Those sources have amplitudes 0.3 and 0.2. The Gaussian-noise amplitude is 0.001.
+
+These values are diagnostic simulation settings, not a calibrated vehicular channel model. The channel hierarchy has its own fixed 100 kS/s rate parameter. A change to the top-level sample rate must therefore be checked against the channel hierarchy and its Doppler-source timing.
+
+=== Receiver ===
+
+The custom receiver has two inputs and three outputs.
+
+{| class="wikitable"
+! Port
+! Stream
+! Use in the main graph
+|-
+| Input 0
+| Complex received samples
+| Synchronisation, header recovery, payload recovery, and sensing-symbol extraction
+|-
+| Input 1
+| Float frequency-correction control
+| Connected to a constant zero in the current simulation, so the correction oscillator applies no fine-frequency adjustment
+|-
+| Output 0
+| Decoded bytes
+| Received-data display and PDU-based BER calculation
+|-
+| Output 1
+| Serialised, unequalised active-carrier samples
+| Received-symbol term in the CFR calculation; the main graph first scales it by <code>1/N</code>
+|-
+| Output 2
+| Softly equalised active-carrier samples
+| Estimate of the transmitted active-carrier symbols used in the CFR denominator
+|}
+
+The synchroniser uses the repeated halves of the first preamble and triggers on the falling edge of its correlation metric at a threshold of 0.996. A header/payload demultiplexer separates the frame. The two preambles initialise the channel estimate; the payload branch uses a decision-feedback equaliser with adaptation factor 0.1. The main graph currently leaves the external fine-frequency correction input at zero because applying the estimated correction caused unstable DDM behaviour in the assumed synchronised simulation.
+
+=== Communication branch ===
+
+The receiver reconstructs packed payload bytes. The BER block converts transmitted and received tagged streams to PDUs, matches them by the recovered <code>packet_num</code>, counts differing bits, and reports cumulative bit errors divided by cumulative compared bits.
+
+This BER value describes only packets that reach the comparison block. Packet loss, acquisition failure, and unmatched packets need separate accounting in a complete link evaluation.
+
+=== Sensing branch ===
+
+For each active subcarrier <code>k</code> and OFDM symbol <code>m</code>, the graph forms a channel-frequency-response estimate of the form:
+
+<pre>
+H[k,m] = (Y[k,m] / N) / X_est[k,m]
+</pre>
+
+Here <code>Y</code> is the unequalised receiver output, <code>X_est</code> is the softly equalised estimate of the transmitted active-carrier symbol, and <code>N</code> is the configured number of active carriers. The samples are assembled column by column into an <code>N × M</code> matrix. A truncation block retains either all <code>M</code> symbols or the first <code>M-1</code>, according to <code>M_crop</code>.
+
+{| class="wikitable"
+! Product
+! Current calculation
+! Current display
+|-
+| Channel frequency response (CFR)
+| Element-wise received/reference ratio on the active carriers
+| Real part of the <code>N × M_crop</code> matrix
+|-
+| Channel impulse response (CIR)
+| Orthonormal IFFT of the CFR along the subcarrier dimension
+| Real part of the <code>N × M_crop</code> matrix
+|-
+| Delay-Doppler map (DDM)
+| Configurable two-dimensional window, zero-padding, IFFT across subcarriers, FFT across symbols, then magnitude squared
+| Linear magnitude-squared view and a view converted with <code>10 log10</code>
+|}
+
+The resolution factor controls zero-padding and display sampling; it does not improve the physical delay or Doppler resolution of the waveform. CFR and CIR windows show only the real component, not magnitude. The DDM values are processing outputs and are not calibrated received power, radar cross section, or detection probability.
+
+The launchers do not pass a carrier frequency to the DDM visualisers. In that mode the horizontal increment is calculated as a simulated Doppler frequency, although the window still labels the axis as velocity in m/s. A physical velocity interpretation requires a non-zero carrier frequency and validation of the complete axis calculation.
+
+== Reference launcher configuration ==
+
+The values below are explicitly set by both launchers. They override the smaller raw defaults stored in the GRC parameter fields.
+
+{| class="wikitable"
+! Parameter
+! Launcher value
+! Meaning
+|-
+| <code>samp_rate</code>
+| 100000 samples/s
+| Software simulation rate; not the USRP RF-test rate
+|-
+| <code>N</code>
+| 127
+| Active subcarriers; the FFT length is <code>N+1 = 128</code>
+|-
+| <code>M</code>
+| 63
+| OFDM symbols assembled for sensing per frame
+|-
+| <code>M_crop</code>
+| 62
+| Symbols retained after dropping the final symbol
+|-
+| <code>number_range</code>
+| 256
+| Number of byte values in one ramp
+|-
+| <code>ramp_num</code>
+| 7
+| Ramps in one 1792-byte packet
+|-
+| <code>cp_len</code>
+| 48 samples
+| Cyclic-prefix length
+|-
+| <code>resol</code>
+| 4
+| Zero-padding and display-sampling factor
+|}
+
+By contrast, the initial hardware RF checks use a 200 MHz USRP master clock and request 100 MS/s. Always identify whether a number belongs to the launcher simulation, the raw GRC fields, or a hardware measurement.
+
+== Repository and source of truth ==
+
+The source is maintained in the [https://git.rwth-aachen.de/ihf/sdr/jcas-ofdm IHF jcas-ofdm GitLab repository].
 
 {| class="wikitable"
 ! Path
 ! Purpose
+! Maintenance rule
 |-
 | <code>Flow_graphs/OFDMJCAS.grc</code>
-| Primary GNU Radio simulation flowgraph
+| Main graph topology, parameters, embedded Python blocks, and ZMQ publishers
+| Edit in GNU Radio Companion and review the generated graph
 |-
 | <code>Flow_graphs/Channel_Model.grc</code>
-| Multipath, delay, Doppler, and noise simulation
+| Multipath, delay, Doppler-like, and noise simulation
+| Edit the GRC source; generated Python is derived
 |-
 | <code>Flow_graphs/OFDMJCAStxrx.py</code>
-| Hand-written OFDM transmitter, receiver, synchronization, and equalization blocks
-|-
-| <code>Plots/</code>
-| Real-time CFR, CIR, and linear/dB DDM visualizers
+| Hand-written transmitter, receiver, synchroniser, and equalisation chains
+| Review carefully when ports, carriers, preambles, or equalisation change
 |-
 | <code>Block_definition/</code>
-| GNU Radio Companion definitions for the custom blocks
+| Committed GNU Radio Companion definitions for the custom transmitter and receiver
+| These retain legacy IDs and class names; the Linux launcher corrects temporary copies and adds the receiver's float input before compiling
+|-
+| <code>Plots/</code>
+| CFR, CIR, and DDM subscribers and visualisers
+| Keep data types, vector lengths, axes, and ZMQ ports aligned with the main graph
 |-
 | <code>Simulation_starter.sh</code> and <code>Simulation_starter.bat</code>
-| Linux and Windows launchers
+| Reference configuration and process launch
+| Keep explicit defaults consistent across platforms
+|-
+| <code>MAINTENANCE.md</code>
+| Contribution, validation, and generated-file rules
+| Read before changing the project
 |-
 | <code>docs/First_tests.md</code>
-| Hardware and RF verification procedures
+| Current USRP and RF verification procedure and status
+| Use for test execution; do not copy changing procedures into this wiki page
+|-
+| <code>Raw_data/</code>
+| Runtime diagnostic captures written by the plotters
+| Generated data; do not commit new captures
 |}
 
-Generated Python flowgraphs and runtime data are not the source of truth. Edit the GRC source or hand-written block, regenerate when required, and do not commit diagnostic captures.
-
-== Software requirements ==
-
-* GNU Radio 3.10; the repository reference version is 3.10.12.0.
-* Python 3 with NumPy, SciPy, pyzmq, PyQt5, pyqtgraph, and SIP.
-* Git for source control.
-* UHD for USRP-connected measurements; UHD is not required for the channel-model-only simulation.
+The GRC files, hand-written block code, launchers, and maintenance guide take precedence over generated Python and older descriptive text. Code and its documentation should be changed and reviewed together.
 
 == Running the simulation ==
 
-Clone the repository and run the preflight check before starting the full simulation.
+The reference environment is GNU Radio 3.10.x; the repository records 3.10.12.0. Python, NumPy, SciPy, pyzmq, PyQt5, pyqtgraph, and SIP must be available in the same environment.
+
+On Linux:
 
 <pre>
 git clone git@git.rwth-aachen.de:ihf/sdr/jcas-ofdm.git
@@ -84,81 +280,80 @@ cd jcas-ofdm
 ./Simulation_starter.sh
 </pre>
 
-For a Radioconda or Conda installation, activate the environment first. On Windows, configure the Radioconda activation path in <code>Simulation_starter.bat</code> and start that launcher instead.
+Activate the intended Conda or Radioconda environment first if GNU Radio is not installed system-wide. <code>PYTHON_BIN</code> and <code>GRCC_BIN</code> can select explicit executables. On Windows, set the local Radioconda activation path near the start of <code>Simulation_starter.bat</code>, then run the batch file.
 
-The run should open the GNU Radio window and separate CFR, CIR, DDM dB, and DDM linear views. Verify that received data and BER update, all plotters receive complete frames, and no process reports import, compilation, port-binding, or vector-size errors.
+The Windows launcher compiles against the custom block definitions installed in its GNU Radio environment. Unlike the Linux launcher, it does not repair the legacy definitions in <code>Block_definition/</code> at launch time. Before relying on the Windows path, confirm that the installed transmitter and receiver definitions use the current class names and expose the receiver's complex-sample and float-correction inputs.
 
-== Main simulation parameters ==
+A normal run should show received data and BER in the GNU Radio window and open separate CFR, CIR, DDM dB, and DDM linear windows. Check for import, compilation, port-binding, vector-size, and flowgraph errors before interpreting the plots.
 
-{| class="wikitable"
-! Parameter
-! Meaning
-|-
-| <code>samp_rate</code>
-| Simulation sample rate; this is not the USRP hardware sample rate
-|-
-| <code>N</code>
-| Number of active OFDM subcarriers
-|-
-| <code>M</code>
-| Number of OFDM symbols per frame
-|-
-| <code>M_crop</code>
-| Number of symbols retained for sensing processing
-|-
-| <code>cp_len</code>
-| Cyclic-prefix length
-|-
-| <code>resol</code>
-| Zero-padding/resolution factor used by the sensing visualizers
-|}
+The plotters write binary diagnostic files under <code>Raw_data/</code>. They overwrite their respective file at startup and can grow during long runs. Use <code>--no-diagnostics</code> with the Linux launcher when those captures should be removed at shutdown.
 
-The default simulation uses 100 kS/s. The initial USRP RF tests use a 200 MHz master clock and 100 MS/s. Keep these configurations separate and always state which one a result uses.
-
-== Outputs and evaluation quantities ==
+== ZMQ interfaces and diagnostic outputs ==
 
 {| class="wikitable"
-! Area
-! Current outputs
-! Additional evaluation quantities
+! Address
+! Published data
+! Consumer
 |-
-| Communication
-| Decoded data and bit error rate (BER)
-| Error vector magnitude, spectral efficiency, and peak-to-average power ratio
+| <code>tcp://127.0.0.1:5555</code>
+| DDM magnitude squared; converted to dB by the plotter
+| <code>Plots/DDM_dB.py</code>
 |-
-| Sensing
-| CFR, CIR, and delay-Doppler map
-| Range and Doppler resolution, unambiguous range and Doppler, sidelobe levels, and processing gain
+| <code>tcp://127.0.0.1:5556</code>
+| DDM magnitude squared
+| <code>Plots/DDM_Linear.py</code>
+|-
+| <code>tcp://127.0.0.1:5557</code>
+| Real part of the CFR matrix
+| <code>Plots/CFR.py</code>
+|-
+| <code>tcp://127.0.0.1:5558</code>
+| Real part of the CIR matrix
+| <code>Plots/CIR.py</code>
 |}
 
-Do not treat uncalibrated display levels as absolute RF power or radar cross section. Every quantitative result must state its signal path, reference plane, normalization, sample rate, and processing settings.
+All four publishers bind to loopback, so only local subscribers can receive them in the reference configuration.
 
-== Hardware verification ==
+== Hardware verification and development priorities ==
 
-The repository test document separates hardware checks from application-level integration:
+Detailed procedures and result records belong in <code>docs/First_tests.md</code>. At overview level, the sequence is:
 
-# USRP and host streaming throughput
-# Transmitter RF-chain characterization
-# Receiver RF-chain characterization
-# Inter-daughterboard synchronization
-# Pure OFDM communication
-# Pure sensing with a static target
-# Joint communication and sensing over the air
+# verify host connectivity and streaming;
+# compare both transmitter RF chains;
+# compare both receiver RF chains;
+# verify the timing and frequency relationship needed between daughterboards;
+# establish pure OFDM communication;
+# validate sensing with a known static scene; and
+# demonstrate joint communication and sensing over the air.
 
-Use <code>docs/First_tests.md</code> in the repository for the detailed and current procedures. Store raw results, scripts, and figures with the version-controlled project material rather than duplicating changeable procedures on this overview page.
+The most important next steps are to preserve complete measurement records, select the primary-USRP TX and sensing-RX roles from comparable data, connect a controlled UHD hardware path, verify synchronisation, and calibrate the sensing axes and levels against known delay and Doppler cases. Only then should static-target and joint over-the-air results be described as validated.
 
-== Documentation policy ==
+The committed custom-block definitions and generated main Python graph also need to be regenerated from, and aligned with, the current GRC and hand-written receiver. The Linux launcher works around the legacy definition names and missing float input in temporary files; that workaround should not be mistaken for source consistency.
 
-This page provides the stable project overview. The GitLab repository remains the source of truth for source code, exact parameters, setup procedures, test status, and results. When behavior changes:
+Communication evaluation should distinguish BER on matched packets from acquisition failures and lost packets. Candidate measures include EVM, spectral efficiency, and peak-to-average power ratio. Sensing evaluation should cover measured delay and Doppler resolution, unambiguous regions, sidelobes, processing gain, and detection performance. These are evaluation goals; they are not all current program outputs.
 
-# update and verify the repository documentation;
-# merge the code and documentation together; and
-# update this page only when the architecture, entry points, hardware, or links change.
+== Interpretation limits ==
 
-== Related pages ==
+* A screen level is not absolute RF power unless the full path and display scaling have been calibrated.
+* A simulated peak is not a detected target; the current graph has no detector or false-alarm control.
+* Zero-padded bins make a plot smoother but do not create physical resolution.
+* A successful communication decode does not prove that sensing timing, phase coherence, or axes are correct.
+* Hardware sample rates and the reference simulation rate are different configurations and must not be mixed in a result.
+* Every quantitative result should identify the code revision, waveform parameters, channel or RF setup, reference plane, normalisation, and known limitations.
 
+== Continuing the project ==
+
+Start with <code>README.md</code> for orientation, then read <code>MAINTENANCE.md</code>, the main GRC files, <code>OFDMJCAStxrx.py</code>, and the current test document. Work on a focused branch, run the Linux preflight or the corresponding Windows checks, and compare the observed frame sizes and peaks with the configured channel before opening a merge request.
+
+When the implementation changes, update the source-of-truth file first. Keep block definitions, stream signatures, coupled parameters, launcher defaults, plot vector sizes, ports, and documentation consistent. Do not commit generated captures, local environment paths, or Python caches.
+
+== References and related pages ==
+
+* [https://git.rwth-aachen.de/ihf/sdr/jcas-ofdm jcas-ofdm repository]
+* [https://wiki.gnuradio.org/ GNU Radio Wiki]
+* [https://files.ettus.com/manual/ UHD and USRP manual]
 * [[Software Defined Radio (SDR)]]
-* [[NI USRP-2954R and UBX-160]]
+* [[NI USRP-2954R]]
 * [[GIT - Versionskontrolle]]
 
 [[Category:Projekte]]

@@ -29,6 +29,7 @@ PAGES_DIR = PROJECT_DIR / "pages"
 STATIC_DIR = SANDBOX_DIR / "static"
 BACKUPS_DIR = SANDBOX_DIR / "backups"
 CONFIG_PATH = SANDBOX_DIR / "config.json"
+REFERENCE_SNAPSHOT_DIR = PROJECT_DIR / "reference" / "ihf_wiki_examples" / "snapshot"
 
 
 def load_config() -> dict:
@@ -186,6 +187,7 @@ def skin(title: str, body: str, action: str = "view", saved: bool = False) -> st
       <div class="vector-menu-content">
         <ul class="vector-menu-content-list">
           <li class="mw-list-item"><a href="{page_url(MAIN_PAGE)}">SDR-Hauptseite</a></li>
+          <li class="mw-list-item"><a href="/reference/">IHF-Wiki-Beispiele</a></li>
           <li class="mw-list-item"><a href="/wiki/Spezial:Letzte_%C3%84nderungen">Letzte Änderungen</a></li>
           <li class="mw-list-item"><a href="/wiki/Spezial:Zuf%C3%A4llige_Seite">Zufällige Seite</a></li>
         </ul>
@@ -341,6 +343,39 @@ def recent_changes_body() -> str:
     return "<p>Local sandbox saves:</p><ul>" + ("".join(items) or "<li>No local saves yet.</li>") + "</ul>"
 
 
+def reference_index_body() -> str:
+    index_path = REFERENCE_SNAPSHOT_DIR / "index.html"
+    if not index_path.is_file():
+        return (
+            "<p>The local example snapshot is not available. Fetch it from the project directory:</p>"
+            "<pre>python3 reference/ihf_wiki_examples/sync.py fetch</pre>"
+        )
+    return (
+        "<p><strong>Read-only local reference:</strong> these are sanitized snapshots of selected "
+        "IHF Wiki pages. They are examples for structure and style; editing remains disabled.</p>"
+        + index_path.read_text(encoding="utf-8")
+    )
+
+
+def reference_page_body(page_id: str) -> tuple[str, str] | None:
+    if not page_id.isdigit():
+        return None
+    page_dir = REFERENCE_SNAPSHOT_DIR / "pages" / page_id
+    metadata_path = page_dir / "metadata.json"
+    content_path = page_dir / "content.html"
+    if not metadata_path.is_file() or not content_path.is_file():
+        return None
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    title = str(metadata["title"])
+    details = (
+        '<p><a href="/reference/">← All local examples</a></p>'
+        '<div class="sandbox-notice"><strong>Read-only snapshot:</strong> '
+        f'revision {html.escape(str(metadata["revid"]))} from '
+        f'{html.escape(str(metadata["timestamp"]))}. Remote media and active content are omitted.</div>'
+    )
+    return title, details + content_path.read_text(encoding="utf-8")
+
+
 class SandboxHandler(BaseHTTPRequestHandler):
     server_version = "IHFSDRSandbox/1.0"
 
@@ -354,6 +389,12 @@ class SandboxHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(payload)))
         self.send_header("Cache-Control", "no-store")
         self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header(
+            "Content-Security-Policy",
+            "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; "
+            "script-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; "
+            "form-action 'self'",
+        )
         self.end_headers()
         if self.command != "HEAD":
             self.wfile.write(payload)
@@ -392,6 +433,22 @@ class SandboxHandler(BaseHTTPRequestHandler):
             return
         if path.startswith("/static/"):
             self.serve_static(unquote(path[len("/static/") :]))
+            return
+        if path in {"/reference", "/reference/"}:
+            self.send_html("IHF Wiki examples", reference_index_body())
+            return
+        reference_match = re.fullmatch(r"/reference/(\d+)/?", path)
+        if reference_match:
+            reference_page = reference_page_body(reference_match.group(1))
+            if reference_page is None:
+                self.send_html(
+                    "Reference page not found",
+                    '<p>The selected page is not present in the local snapshot. <a href="/reference/">Return to the index.</a></p>',
+                    status=404,
+                )
+            else:
+                title, body = reference_page
+                self.send_html(f"Reference: {title}", body)
             return
         if path == "/wiki/index.php":
             if "search" in query:

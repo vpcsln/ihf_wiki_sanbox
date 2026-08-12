@@ -10,7 +10,17 @@ from pathlib import Path
 SANDBOX_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SANDBOX_DIR))
 
-from serve import PAGE_FILES, edit_body, page_source, page_url, search_body, view_body  # noqa: E402
+from serve import (  # noqa: E402
+    PAGE_FILES,
+    REFERENCE_SNAPSHOT_DIR,
+    edit_body,
+    page_source,
+    page_url,
+    reference_index_body,
+    reference_page_body,
+    search_body,
+    view_body,
+)
 
 
 class LocalServerTests(unittest.TestCase):
@@ -55,6 +65,32 @@ class LocalServerTests(unittest.TestCase):
         self.assertIn("Vorschau", body)
         self.assertIn("wpPreview", body)
         self.assertIn("wpSave", body)
+
+    def test_reference_index_is_safe_when_snapshot_is_present_or_absent(self) -> None:
+        body = reference_index_body()
+        if (REFERENCE_SNAPSHOT_DIR / "manifest.json").is_file():
+            self.assertIn("Read-only local reference", body)
+            self.assertIn("/reference/", body)
+        else:
+            self.assertIn("snapshot is not available", body)
+            self.assertIn("sync.py fetch", body)
+
+    def test_reference_page_uses_numeric_ids_and_local_sanitized_content(self) -> None:
+        self.assertIsNone(reference_page_body("../1"))
+        manifest_path = REFERENCE_SNAPSHOT_DIR / "manifest.json"
+        if not manifest_path.is_file():
+            return
+        import json
+
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        page_id = str(manifest["pages"][0]["pageid"])
+        result = reference_page_body(page_id)
+        self.assertIsNotNone(result)
+        title, body = result
+        self.assertTrue(title)
+        self.assertIn("Read-only snapshot", body)
+        self.assertNotIn("<script", body.lower())
+        self.assertNotIn("<iframe", body.lower())
 
 
 if __name__ == "__main__":

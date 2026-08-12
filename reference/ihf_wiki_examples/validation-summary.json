@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-08-12T14:30:10.446629+00:00",
+  "mediawiki_generator": "MediaWiki 1.37.2",
+  "category_member_counts": {
+    "Hardware": 14,
+    "Software": 18,
+    "Messtechnik": 32,
+    "Forschungsthemen": 8
+  },
+  "deduplicated_page_count": 78,
+  "latest_revision_only": true,
+  "uploaded_files_downloaded": 0,
+  "verification": "passed"
+}

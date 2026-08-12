@@ -1,0 +1,13 @@
+{
+  "categories": [
+    "Hardware",
+    "Software",
+    "Messtechnik",
+    "Forschungsthemen"
+  ],
+  "extra_pages": [
+    "Hauptseite",
+    "Tutorial"
+  ],
+  "include_category_pages": true
+}

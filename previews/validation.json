@@ -7,14 +7,14 @@
       "Software"
     ],
     "links": [
-      "NI USRP-2954R and UBX-160",
+      "NI USRP-2954R",
       "OFDM-based Joint Communication and Sensing (JCAS)",
       "GIT - Versionskontrolle"
     ]
   },
-  "NI USRP-2954R and UBX-160": {
-    "source": "NI_USRP-2954R_and_UBX-160.wiki",
-    "preview": "NI_USRP-2954R_and_UBX-160.html",
+  "NI USRP-2954R": {
+    "source": "NI_USRP-2954R.wiki",
+    "preview": "NI_USRP-2954R.html",
     "categories": [
       "Hardware",
       "Messtechnik"
@@ -34,7 +34,7 @@
     ],
     "links": [
       "Software Defined Radio (SDR)",
-      "NI USRP-2954R and UBX-160",
+      "NI USRP-2954R",
       "GIT - Versionskontrolle"
     ]
   }

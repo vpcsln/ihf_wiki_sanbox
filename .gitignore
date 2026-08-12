@@ -8,6 +8,7 @@ __pycache__/
 !.env.example
 cookies.txt
 *.cookie
+reference/ihf_wiki_examples/snapshot/
 sandbox/backups/*
 !sandbox/backups/.gitkeep
 core

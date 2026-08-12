@@ -1,0 +1,181 @@
+The '''NI USRP-2954R''' is a two-channel software-defined radio used for wideband prototyping at IHF. The unit documented here contains two UBX-160 RF daughterboards and is connected to its host through both 10 Gigabit Ethernet ports.
+
+{| class="wikitable" style="width:100%; text-align:center;"
+! colspan="3" | SDR documentation
+|-
+| [[Software Defined Radio (SDR)|SDR overview]]
+| '''Hardware: NI USRP-2954R'''
+| [[OFDM-based Joint Communication and Sensing (JCAS)|Project: OFDM-based JCAS]]
+|}
+
+__TOC__
+
+== Hardware overview ==
+
+{| class="wikitable"
+! Parameter
+! NI USRP-2954R specification
+|-
+| RF channels
+| 2 transmit and 2 receive channels
+|-
+| Frequency range
+| 10 MHz to 6 GHz
+|-
+| Maximum real-time bandwidth
+| 160 MHz; the receive bandwidth is limited to 84 MHz below 500 MHz
+|-
+| Maximum I/Q sample rate
+| 200 MS/s
+|-
+| TX gain range
+| 0 dB to 31.5 dB in 0.5 dB steps
+|-
+| RX gain range
+| 0 dB to 37.5 dB in 0.5 dB steps
+|-
+| Maximum receiver input
+| -15 dBm
+|-
+| Converter resolution
+| 16-bit DAC and 14-bit ADC
+|-
+| RF impedance
+| 50 ohm
+|}
+
+These are system specifications from NI. The UBX documentation describes its programmable gain stages separately and does not use the same end-to-end RX gain range. Query the installed hardware with UHD and record the requested and actual values used in each measurement.
+
+== UBX-160 daughterboards ==
+
+The installed UBX-160 daughterboards provide full-duplex coverage from 10 MHz to 6 GHz with up to 160 MHz instantaneous bandwidth. Their transmit and receive local oscillators are independent.
+
+Each daughterboard has two female SMA RF connectors:
+
+* <code>TX/RX</code> is used for transmission and can also be selected for reception;
+* <code>RX2</code> is receive-only; and
+* when one daughterboard transmits and receives at the same time, reception uses <code>RX2</code>.
+
+UHD channel numbers, daughterboard slots, RF connectors, and SFP+ Ethernet ports are separate mappings. Confirm the channel, daughterboard, and connector reported by UHD instead of inferring them from a cable position or IP address.
+
+== Clocking and synchronisation ==
+
+The USRP-2954R provides internal clocking, an integrated GPS-disciplined oscillator, and front-panel reference and PPS connections. Select the required clock and time sources explicitly in UHD and record them with the measurement. The presence of a common chassis or reference does not by itself prove application-level time, frequency, or phase alignment; verify the property that the experiment depends on.
+
+The OFDM JCAS RF-characterisation work uses a 200 MHz master clock and requests 100 MS/s. These settings are not the defaults for every USRP application.
+
+== IHF host and network configuration ==
+
+The recorded project host setup uses Ubuntu 24.04 LTS, GNU Radio 3.10, UHD built from source, and the XG FPGA image. XG provides a 10 Gigabit Ethernet interface on each SFP+ port.
+
+{| class="wikitable"
+! Link
+! Host interface in the recorded setup
+! Host address
+! USRP address
+|-
+| First 10 Gigabit Ethernet link
+| <code>enp1s0f0np0</code>
+| <code>192.168.30.1/24</code>
+| <code>192.168.30.2</code>
+|-
+| Second 10 Gigabit Ethernet link
+| <code>enp1s0f1np1</code>
+| <code>192.168.40.1/24</code>
+| <code>192.168.40.2</code>
+|}
+
+Both host interfaces use MTU 9000. The recorded maximum Linux receive and transmit socket-buffer values are <code>24912805</code> bytes. Interface names can change after an operating-system or network reconfiguration; check them with <code>ip -br address</code> before using the commands below.
+
+== Startup and health checks ==
+
+<pre>
+ip -br address
+ip -s link show enp1s0f0np0
+ip -s link show enp1s0f1np1
+sudo ethtool enp1s0f0np0
+sudo ethtool enp1s0f1np1
+
+sysctl net.core.rmem_max net.core.wmem_max
+
+ping -c 4 192.168.30.2
+ping -c 4 192.168.40.2
+
+uhd_find_devices
+uhd_usrp_probe \
+  --args="type=x300,addr=192.168.30.2,second_addr=192.168.40.2"
+</pre>
+
+Before a high-rate run, confirm that both links report 10 Gbit/s and MTU 9000, both daughterboards are present, the requested clock and time sources are available, and UHD reports a compatible FPGA image. Save the actual tune, rate, gain, bandwidth, antenna, and LO-lock state as part of the test record.
+
+=== FPGA image maintenance ===
+
+The project uses the XG image for two 10 Gigabit Ethernet links. Reload an FPGA image only during initial setup, recovery, or an intentional image change; use the image supplied with the installed UHD release and restart the USRP afterwards.
+
+<pre>
+uhd_image_loader --args="type=x300,addr=192.168.30.2,fpga=XG"
+</pre>
+
+Do not run this command as a routine startup step.
+
+== Use with GNU Radio ==
+
+Use a UHD USRP Source for reception and a UHD USRP Sink for transmission. Hardware controls the sample flow, so a Throttle block must not be placed in a hardware-connected path.
+
+For a reproducible run, record:
+
+* motherboard and daughterboard serial numbers, UHD and GNU Radio versions, and FPGA image;
+* requested and actual master-clock rate, sample rate, centre frequency, gain, and analogue bandwidth;
+* CPU and over-the-wire sample formats;
+* UHD channel, daughterboard slot, RF connector, clock and time sources, and LO-lock state; and
+* overruns, underruns, timeouts, tune coercion, late commands, and other warnings.
+
+The achievable streaming rate depends on the number of active channels, over-the-wire format, Ethernet configuration, and host processing load. Treat a successful device probe as a connectivity check, not as a throughput result.
+
+== JCAS use ==
+
+The [[OFDM-based Joint Communication and Sensing (JCAS)]] project plans to use one daughterboard for transmission and the other for sensing reception on the primary USRP. Both daughterboards have been checked as transmitters and receivers near 5.8 GHz. Their final roles should be based on documented, comparable RF measurements; the completed checks alone do not establish which board is better suited to either role.
+
+The project repository contains the current measurement procedure and status. The wiki records the stable hardware setup and does not duplicate the detailed test instructions.
+
+== RF safety ==
+
+* Carry out conducted checks without antennas unless radiation is an explicit part of the approved setup.
+* Disable the generator or USRP output before changing RF connections.
+* Use rated 50-ohm terminations, cables, adapters, and attenuators.
+* Never apply more than -15 dBm to a USRP-2954R receiver input. The JCAS receiver comparison uses -20 dBm as a more conservative ceiling and stops sooner if non-linearity appears.
+* Begin generator and transmitter tests at low power. Account for the complete signal path and the limits of every connected instrument.
+* Never connect a transmitter directly to a receiver without verified attenuation and isolation.
+
+== Troubleshooting ==
+
+{| class="wikitable"
+! Symptom
+! Checks
+|-
+| USRP not found
+| Check link state, host subnets, ping responses, firewall settings, and the addresses passed to UHD.
+|-
+| FPGA compatibility error
+| Check the installed UHD version and FPGA image. Load the matching image only if the versions are incompatible.
+|-
+| Overruns or underruns
+| Check link speeds, MTU, socket buffers, actual sample rates, active-channel count, sample formats, and host CPU load.
+|-
+| Unexpected RF frequency or level
+| Check the actual tune result, LO lock, connector selection, gain, analogue bandwidth, correction settings, and external path loss.
+|-
+| Different results between channels
+| Recheck the physical channel mapping and repeat the comparison with the same connector, cables, settings, and reference plane.
+|}
+
+== References and related pages ==
+
+* [https://download.ni.com/support/manuals/375725c.pdf NI USRP-2954R specifications]
+* [https://kb.ettus.com/UBX Ettus UBX documentation]
+* [https://files.ettus.com/manual/page_usrp_x3x0.html UHD X300/X310 manual]
+* [[Software Defined Radio (SDR)]]
+* [[OFDM-based Joint Communication and Sensing (JCAS)]]
+
+[[Category:Hardware]]
+[[Category:Messtechnik]]
