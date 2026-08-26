@@ -16,7 +16,7 @@ Validation was refreshed on 2026-08-26 after the project documentation advanced 
 |---|---|
 | High-risk claims checked directly against current GRC, Python, launcher, block-definition, plot, and test sources | Reported by `source-report.json` |
 | Recorded result values checked from the PDF text extraction | Test 1 matrix, Test 2A values, Test 2B LO/image, compression observations, IIP3, and IIP2 |
-| Sandbox and renderer unit tests | 17 passed |
+| Sandbox and renderer unit tests | 20 passed |
 | IHF example-corpus hash verification | 78 pages passed |
 | GNU Radio Linux preflight on an isolated copy | Passed with GNU Radio 3.10.12.0; channel and main flowgraphs compiled |
 | Standalone preview generation | 3 pages generated without syntax errors |
