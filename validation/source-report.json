@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-08-26T16:19:57.154410+00:00",
+  "generated_at": "2026-08-26T16:27:48.626802+00:00",
   "project_repository": "jcas-ofdm",
   "project_revision": "084933d0b1e772d5ace59db8b0ccb78163303a42",
-  "automatic_check_count": 101,
+  "automatic_check_count": 107,
   "automatic_checks": [
     {
       "name": "Linux reference launcher values",
@@ -326,11 +326,35 @@
       "status": "passed"
     },
     {
+      "name": "No ASCII arrow diagram: NI_USRP-2954R.wiki",
+      "status": "passed"
+    },
+    {
+      "name": "No Unicode arrow diagram: NI_USRP-2954R.wiki",
+      "status": "passed"
+    },
+    {
       "name": "No obsolete navigation bar: OFDM-based_Joint_Communication_and_Sensing_(JCAS).wiki",
       "status": "passed"
     },
     {
+      "name": "No ASCII arrow diagram: OFDM-based_Joint_Communication_and_Sensing_(JCAS).wiki",
+      "status": "passed"
+    },
+    {
+      "name": "No Unicode arrow diagram: OFDM-based_Joint_Communication_and_Sensing_(JCAS).wiki",
+      "status": "passed"
+    },
+    {
       "name": "No obsolete navigation bar: Software_Defined_Radio_(SDR).wiki",
+      "status": "passed"
+    },
+    {
+      "name": "No ASCII arrow diagram: Software_Defined_Radio_(SDR).wiki",
+      "status": "passed"
+    },
+    {
+      "name": "No Unicode arrow diagram: Software_Defined_Radio_(SDR).wiki",
       "status": "passed"
     },
     {

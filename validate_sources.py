@@ -240,6 +240,8 @@ def validate(
 
     for filename, source in public_sources.items():
         require_absent(checks, f"No obsolete navigation bar: {filename}", source, "SDR documentation")
+        require_absent(checks, f"No ASCII arrow diagram: {filename}", source, "->")
+        require_absent(checks, f"No Unicode arrow diagram: {filename}", source, "→")
     hub = public_sources["Software_Defined_Radio_(SDR).wiki"]
     hardware = public_sources["NI_USRP-2954R.wiki"]
     require_contains(checks, "Hub has dedicated hardware section", hub, "== Hardware ==")

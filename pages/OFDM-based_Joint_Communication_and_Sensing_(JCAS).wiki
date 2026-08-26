@@ -58,15 +58,7 @@ The project covers an OFDM communication link, channel-response processing for s
 
 == Intended system architecture ==
 
-The planned primary node uses one UBX-160 daughterboard for transmission and the other for sensing reception. A second USRP acts as the communication receiver; its exact hardware configuration is not defined in the current repository. Both daughterboards on the primary USRP have been checked in transmit and receive configurations. Their final roles should be assigned only after comparable measurements have been recorded.
-
-<pre>
-Primary node                                  Communication node
-
-payload -> OFDM TX -> RF waveform -----------------------------> OFDM RX -> payload
-                       |
-                       +-> target / propagation -> sensing RX -> CFR -> CIR / DDM
-</pre>
+The planned primary node uses one UBX-160 daughterboard for transmission and the other for sensing reception. The transmitted OFDM waveform is intended to serve two paths: a direct communication path to a separate communication receiver and a propagation path in which a target reflection is captured by the sensing receiver and processed into channel-frequency, channel-impulse, and delay-Doppler information. A second USRP acts as the communication receiver; its exact hardware configuration is not defined in the current repository. Both daughterboards on the primary USRP have been checked in transmit and receive configurations. Their final roles should be assigned only after comparable measurements have been recorded.
 
 The main repository flowgraph does not yet implement this complete hardware diagram. It connects the transmitter to a software channel model and then to one receiver; there are no UHD Source or UHD Sink blocks in that graph.
 
@@ -214,16 +206,7 @@ For communication, the receiver estimates the channel, equalises the data carrie
 
 == Current simulation signal chain ==
 
-<pre>
-repeating byte ramp -> packet tagging -> OFDM transmitter -> channel model -> OFDM receiver
-        |                                                           |
-        +-------------------- transmitted PDU -----------------------+-> decoded PDU -> BER
-                                                                    |
-                                                                    +-> active-carrier symbols
-                                                                         -> CFR -> CIR / DDM
-</pre>
-
-The reference launchers generate seven repetitions of the byte values 0 to 255, giving a 1792-byte payload. A Throttle block controls the software-only simulation. It must be removed when the graph is replaced by hardware sources or sinks.
+The reference launchers generate seven repetitions of the byte values 0 to 255, giving a 1792-byte payload. The tagged payload is modulated by the OFDM transmitter and passed through the simulated channel model before reaching the custom receiver. The receiver produces decoded bytes for the BER calculation and also exposes active-carrier samples for the CFR, CIR, and DDM processing. A Throttle block controls the software-only simulation. It must be removed when the graph is replaced by hardware sources or sinks.
 
 === OFDM frame ===
 

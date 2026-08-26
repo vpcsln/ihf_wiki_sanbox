@@ -88,6 +88,13 @@ class WikiSourceTests(unittest.TestCase):
         self.assertIn("== Project on this hardware ==", hardware)
         self.assertIn("== SDR hierarchy ==", project)
 
+    def test_pages_do_not_use_ascii_arrow_diagrams(self) -> None:
+        for title, filename in self.config["pages"].items():
+            source = (PROJECT_DIR / "pages" / filename).read_text(encoding="utf-8")
+            with self.subTest(title=title):
+                self.assertNotIn("->", source)
+                self.assertNotIn("→", source)
+
     def test_jcas_source_links_target_gitlab_main(self) -> None:
         source = (PROJECT_DIR / "pages" / self.config["pages"]["OFDM-based Joint Communication and Sensing (JCAS)"]).read_text(encoding="utf-8")
         self.assertIn("https://git.rwth-aachen.de/ihf/sdr/jcas-ofdm/-/tree/main", source)

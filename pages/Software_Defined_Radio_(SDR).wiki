@@ -4,12 +4,7 @@ __TOC__
 
 == Overview ==
 
-A typical SDR separates the radio into a configurable hardware path and an application running on a host computer.
-
-<pre>
-Receive: RF input -> RF front end -> ADC -> FPGA -> host interface -> application
-Transmit: Application -> host interface -> FPGA -> DAC -> RF front end -> RF output
-</pre>
+A typical SDR separates the radio into a configurable hardware path and an application running on a host computer. During reception, the RF front end conditions the incoming signal, the ADC converts it to digital samples, and the FPGA processes and transfers those samples to the host application. During transmission, the application sends digital samples to the FPGA; the DAC converts them to an analogue signal, and the RF front end generates the output signal.
 
 The usable frequency range, bandwidth, and sample rate depend on the complete path. The RF front end, converters, FPGA configuration, host connection, and signal-processing workload must all support the selected operating point.
 
