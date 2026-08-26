@@ -1,12 +1,10 @@
 The '''OFDM-based Joint Communication and Sensing (JCAS) project''' develops a GNU Radio system in which one OFDM waveform carries data and provides channel measurements for sensing. The intended application is a quasi-bistatic automotive scenario with a transmitting and sensing node and a separate communication receiver.
 
-{| class="wikitable" style="width:100%; text-align:center;"
-! colspan="3" | SDR documentation
-|-
-| [[Software Defined Radio (SDR)|SDR overview]]
-| [[NI USRP-2954R|Hardware: NI USRP-2954R]]
-| '''Project: OFDM-based JCAS'''
-|}
+== SDR hierarchy ==
+
+* Parent page: [[Software Defined Radio (SDR)|Software Defined Radio (SDR)]]
+* Hardware: [[NI USRP-2954R|NI USRP-2954R]]
+* Current project page: '''OFDM-based Joint Communication and Sensing (JCAS)'''
 
 __TOC__
 
@@ -29,17 +27,21 @@ The project covers an OFDM communication link, channel-response processing for s
 |-
 | Basic USRP operation
 | Performed
-| Host streaming and the project-relevant one-TX/one-RX configuration have been exercised.
+| Host streaming was checked across the requested stream combinations; the project-relevant one-TX/one-RX case was also exercised during Test 4.
 |-
 | Transmitter and receiver checks near 5.8 GHz
 | Performed on both daughterboards
-| The project records the checks as performed, but complete quantitative result tables are not available for every measurement.
+| Test 2A and Test 2B results include board-to-board RF comparisons; the detailed procedures and raw records remain in the project test material.
 |-
 | Pure OFDM communication on hardware
 | Performed
 | The hardware run also exercised one transmit and one receive stream.
 |-
-| Inter-daughterboard synchronisation
+| Network timing check
+| Performed
+| Test 2A reported an offset not exceeding 50 Hz for most network synchronisation algorithms; the GPS exception was attributed to a possible external GPS-receiver fault.
+|-
+| Dedicated inter-daughterboard synchronisation
 | Not demonstrated
 | The corresponding test is recorded as not performed.
 |-
@@ -67,6 +69,142 @@ payload -> OFDM TX -> RF waveform -----------------------------> OFDM RX -> payl
 </pre>
 
 The main repository flowgraph does not yet implement this complete hardware diagram. It connects the transmitter to a software channel model and then to one receiver; there are no UHD Source or UHD Sink blocks in that graph.
+
+== Recorded hardware results ==
+
+The following is a concise record of the completed hardware checks. Test 1 stream counts refer to active TX and RX streams, not to daughterboard names. Test 2A and Test 2B use the project measurements near 5.8 GHz, with a 200 MHz master clock, 100 MS/s application rate, the same RF cable, and the recorded <code>Unknown PPS</code> synchronisation setting. Displayed Frequency Sink levels are dBFS; dBm values below refer to an instrument or input reference and are not interchangeable with display levels.
+
+=== Test 1: streaming limits observed ===
+
+The USRP test record selected the following highest reliably operated rate for each tested stream combination:
+
+{| class="wikitable"
+! Active TX streams
+! Active RX streams
+! Highest reliably operated rate
+! Observation
+|-
+| 0
+| 1
+| 200 MS/s
+| One 10GbE link
+|-
+| 0
+| 2
+| 200 MS/s
+| Two 10GbE links
+|-
+| 1
+| 0, 1, or 2
+| 100 MS/s
+| Higher rates produced TX underflows in the recorded runs
+|-
+| 2
+| 0
+| 100 MS/s
+| Higher rates produced TX underflows in the recorded runs
+|-
+| 2
+| 1
+| 66.6 MS/s
+| Underflows were observed with two links
+|-
+| 2
+| 2
+| 50 MS/s
+| Underflows were observed with two links
+|}
+
+The trial set also requested 40 MS/s. The report records the matrix above rather than a separate 40 MS/s result. The 200 MS/s master clock permits integer-divisor rates such as 200, 100, and approximately 66.6 MS/s; Ethernet throughput and host processing limit the number of active streams. The report attributes the transmission-chain underflows at higher rates to host/GNU Radio processing and notes that real-time scheduling, code optimisation, or a more allocation-aware implementation may help. Both Ethernet links performed similarly; when one link was sufficient, the first USRP address was used as the default. A direct same-USRP TX-to-RX shortcut was affected by LO leakage at the receiver, while external instrumentation did not show that synchronisation-related problem.
+
+=== Test 2A: transmitter measurements ===
+
+The time-synchronisation check reported an offset of no more than 50 Hz for nearly all network synchronisation algorithms. GPS was the exception and may have been affected by the external GPS receiver; internet connectivity improved the observed performance.
+
+The measured 5.8 GHz LO/image results were:
+
+{| class="wikitable"
+! Daughterboard label
+! Desired peak (dBm)
+! Carrier suppression (dB)
+! Image rejection ratio (dB)
+|-
+| A
+| -6.06
+| -25.68
+| -38.32
+|-
+| B
+| -5.75
+| -25.41
+| -35.79
+|}
+
+The report expects approximately -35 dB carrier suppression and -45 dB image rejection at a lower operating frequency. The harmonic result table reports 1.73 dBm fundamental and -51.73 dB second-harmonic distortion for its first row, and 1.56 dBm and -52.07 dB for its second row; both third harmonics were below the noise floor. The source result table labels those rows as daughterboards 0 and 1, so the raw numeric labels must not be inferred from an Ethernet port. The 1 kHz AM transmission with modulation index 0.7 was reported as matching the expected behaviour. Compression and saturation plots were recorded, but the report does not provide a numerical compression or saturation point.
+
+=== Test 2B: receiver measurements ===
+
+For the LO/image check, a -30 dBm CW tone was applied at 5.801 GHz and observed with a rectangular-window FFT of size 8192. The results were:
+
+{| class="wikitable"
+! Daughterboard label
+! Desired peak (dBFS)
+! Carrier suppression (dB)
+! Image rejection ratio (dB)
+|-
+| A
+| -41.11
+| -47.87
+| -28.66
+|-
+| B
+| -39.40
+| -47.76
+| -29.59
+|}
+
+The receiver input limit is -15 dBm. In the compression test, a -22.58 dB attenuator was used. At both 20 dB and 37.5 dB RX gain, the generator range from -30 to -20 dBm was reported as irregular, likely because the tone was close to the noise floor and the FFT response was sensitive to small changes. With 20 dB gain, the response was linear from a -20 to 7 dBm generator setting, corresponding to -15 dBm at the receiver input with the recorded attenuator; compression or saturation was not reached. With 37.5 dB gain, the response was linear from -20 to 0 dBm and unstable from 0 to 5 dBm. These observations identify the tested operating region; they are not a standardized P1dB result.
+
+The two-tone intermodulation results were:
+
+{| class="wikitable"
+! Test
+! Board
+! Input reference (dBm)
+! Displayed tone powers (dBFS)
+! Displayed intermodulation powers (dBFS)
+! Calculated intercept
+|-
+| IIP3
+| A
+| -48.7
+| +2 MHz: -22.72; +3 MHz: -20.78
+| +1 MHz: -68.35; +4 MHz: -69.43
+| -25.13 dBm
+|-
+| IIP3
+| B
+| -48.1
+| +2 MHz: -21.17; +3 MHz: -19.23
+| +1 MHz: -66.87; +4 MHz: -68.16
+| -24.44 dBm
+|-
+| IIP2
+| A
+| -48.7
+| +2 MHz: -22.79; +5 MHz: -23.24
+| +3 MHz: -77.34; +7 MHz: -79.23
+| 6.57 dBm
+|-
+| IIP2
+| B
+| -48.1
+| +2 MHz: -21.08; +5 MHz: -21.52
+| +3 MHz: -75.85; +7 MHz: -76.63
+| 6.94 dBm
+|}
+
+The IIP3 tests used +2 and +3 MHz tones; the IIP2 tests used +2 and +5 MHz tones. In both tests, the tones were generated through the other daughterboard with amplitude 0.5 and TX gain 0, at the 5.8 GHz tune, 100 MS/s, and 37.5 dB RX gain. The intercept calculations use the documented dBFS differences, while only the input reference is absolute dBm. The reported IIP2 values are well above the tested receiver-input limit; the result report therefore expects this second-order nonlinearity not to affect the planned experiments. The values are measurement results under the recorded setup, not universal specifications for every gain, bandwidth, connector, or frequency.
 
 == Why OFDM can support both functions ==
 
@@ -220,42 +358,50 @@ By contrast, the initial hardware RF checks use a 200 MHz USRP master clock and 
 
 == Repository and source of truth ==
 
-The source is maintained in the [https://git.rwth-aachen.de/ihf/sdr/jcas-ofdm IHF jcas-ofdm GitLab repository].
+The source is maintained in the [https://git.rwth-aachen.de/ihf/sdr/jcas-ofdm/-/tree/main IHF jcas-ofdm GitLab repository]. Use the linked files below for the current source on the <code>main</code> branch; the repository commit and test record should be captured with every result.
 
 {| class="wikitable"
 ! Path
 ! Purpose
 ! Maintenance rule
 |-
-| <code>Flow_graphs/OFDMJCAS.grc</code>
+| [https://git.rwth-aachen.de/ihf/sdr/jcas-ofdm/-/blob/main/Flow_graphs/OFDMJCAS.grc <code>Flow_graphs/OFDMJCAS.grc</code>]
 | Main graph topology, parameters, embedded Python blocks, and ZMQ publishers
 | Edit in GNU Radio Companion and review the generated graph
 |-
-| <code>Flow_graphs/Channel_Model.grc</code>
+| [https://git.rwth-aachen.de/ihf/sdr/jcas-ofdm/-/blob/main/Flow_graphs/Channel_Model.grc <code>Flow_graphs/Channel_Model.grc</code>]
 | Multipath, delay, Doppler-like, and noise simulation
 | Edit the GRC source; generated Python is derived
 |-
-| <code>Flow_graphs/OFDMJCAStxrx.py</code>
+| [https://git.rwth-aachen.de/ihf/sdr/jcas-ofdm/-/blob/main/Flow_graphs/OFDMJCAStxrx.py <code>Flow_graphs/OFDMJCAStxrx.py</code>]
 | Hand-written transmitter, receiver, synchroniser, and equalisation chains
 | Review carefully when ports, carriers, preambles, or equalisation change
 |-
-| <code>Block_definition/</code>
+| [https://git.rwth-aachen.de/ihf/sdr/jcas-ofdm/-/blob/main/Flow_graphs/OFDM_JCAS.py <code>Flow_graphs/OFDM_JCAS.py</code>]
+| Generated main Python graph
+| Regenerate from the GRC source; do not treat it as the authoritative design
+|-
+| [https://git.rwth-aachen.de/ihf/sdr/jcas-ofdm/-/tree/main/Block_definition <code>Block_definition/</code>]
 | Committed GNU Radio Companion definitions for the custom transmitter and receiver
 | These retain legacy IDs and class names; the Linux launcher corrects temporary copies and adds the receiver's float input before compiling
 |-
-| <code>Plots/</code>
+| [https://git.rwth-aachen.de/ihf/sdr/jcas-ofdm/-/tree/main/Plots <code>Plots/</code>]
 | CFR, CIR, and DDM subscribers and visualisers
 | Keep data types, vector lengths, axes, and ZMQ ports aligned with the main graph
 |-
-| <code>Simulation_starter.sh</code> and <code>Simulation_starter.bat</code>
+| [https://git.rwth-aachen.de/ihf/sdr/jcas-ofdm/-/blob/main/Simulation_starter.sh <code>Simulation_starter.sh</code>] and [https://git.rwth-aachen.de/ihf/sdr/jcas-ofdm/-/blob/main/Simulation_starter.bat <code>Simulation_starter.bat</code>]
 | Reference configuration and process launch
 | Keep explicit defaults consistent across platforms
 |-
-| <code>MAINTENANCE.md</code>
+| [https://git.rwth-aachen.de/ihf/sdr/jcas-ofdm/-/blob/main/MAINTENANCE.md <code>MAINTENANCE.md</code>]
 | Contribution, validation, and generated-file rules
 | Read before changing the project
 |-
-| <code>docs/First_tests.md</code>
+| [https://git.rwth-aachen.de/ihf/sdr/jcas-ofdm/-/blob/main/README.md <code>README.md</code>]
+| Project orientation and parameter summary
+| Use as an entry point, then verify implementation details in the linked sources
+|-
+| [https://git.rwth-aachen.de/ihf/sdr/jcas-ofdm/-/blob/main/docs/First_tests.md <code>docs/First_tests.md</code>]
 | Current USRP and RF verification procedure and status
 | Use for test execution; do not copy changing procedures into this wiki page
 |-
@@ -270,10 +416,10 @@ The GRC files, hand-written block code, launchers, and maintenance guide take pr
 
 The reference environment is GNU Radio 3.10.x; the repository records 3.10.12.0. Python, NumPy, SciPy, pyzmq, PyQt5, pyqtgraph, and SIP must be available in the same environment.
 
-On Linux:
+On Linux, clone the repository and run the reference launcher:
 
 <pre>
-git clone git@git.rwth-aachen.de:ihf/sdr/jcas-ofdm.git
+git clone https://git.rwth-aachen.de/ihf/sdr/jcas-ofdm.git
 cd jcas-ofdm
 
 ./Simulation_starter.sh --check
@@ -349,7 +495,7 @@ When the implementation changes, update the source-of-truth file first. Keep blo
 
 == References and related pages ==
 
-* [https://git.rwth-aachen.de/ihf/sdr/jcas-ofdm jcas-ofdm repository]
+* [https://git.rwth-aachen.de/ihf/sdr/jcas-ofdm/-/tree/main jcas-ofdm repository (main branch)]
 * [https://wiki.gnuradio.org/ GNU Radio Wiki]
 * [https://files.ettus.com/manual/ UHD and USRP manual]
 * [[Software Defined Radio (SDR)]]

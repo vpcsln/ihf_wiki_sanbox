@@ -15,6 +15,8 @@ ROOT = Path(__file__).resolve().parent
 PAGES = ROOT / "pages"
 DEFAULT_PROJECT_REPO = ROOT.parent / "jcas-ofdm"
 DEFAULT_REPORT = ROOT / "validation" / "source-report.json"
+DEFAULT_RESULTS_PDF = ROOT.parent / "Tests results.pdf"
+DEFAULT_TEST_NOTES = ROOT.parent / "Test_1_2_new_folder_18aug"
 
 
 def require_contains(checks: list[dict[str, str]], name: str, text: str, value: str) -> None:
@@ -62,7 +64,27 @@ def batch_assignments(text: str) -> dict[str, int]:
     }
 
 
-def validate(project_repo: Path) -> dict[str, object]:
+def read_results_pdf(path: Path) -> str | None:
+    """Return extracted result text when the local result report is available."""
+    if not path.is_file():
+        return None
+    try:
+        result = subprocess.run(
+            ["pdftotext", "-layout", str(path), "-"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except (FileNotFoundError, subprocess.CalledProcessError) as exc:
+        raise RuntimeError(f"Could not extract {path}: install poppler-utils") from exc
+    return result.stdout
+
+
+def validate(
+    project_repo: Path,
+    results_pdf: Path = DEFAULT_RESULTS_PDF,
+    test_notes: Path = DEFAULT_TEST_NOTES,
+) -> dict[str, object]:
     required_paths = (
         project_repo / "Flow_graphs" / "OFDMJCAS.grc",
         project_repo / "Flow_graphs" / "Channel_Model.grc",
@@ -149,7 +171,36 @@ def validate(project_repo: Path) -> dict[str, object]:
         require_contains(checks, f"Channel value {value}", channel_grc, value)
     require_contains(checks, "Channel model fixed rate", channel_grc, "value: '100000'")
 
-    require_contains(checks, "Receiver test status", tests, "Both daughterboards were tested")
+    require_contains(
+        checks,
+        "Current Test 1 trial rates",
+        tests,
+        "Requested single stream trial rates | 200, 100, 66.6, 50, and 40 MS/s per active stream",
+    )
+    require_contains(checks, "Current Test 1 master clock", tests, "`MCR_project` | 200 MHz")
+    require_contains(
+        checks,
+        "Current Test 1 project mapping",
+        tests,
+        "TX on daughterboard A with RX on daughterboard B",
+    )
+    require_contains(
+        checks,
+        "Current receiver input limit",
+        tests,
+        "Maximum input used in this test | -15 dBm at the USRP input",
+    )
+    require_contains(checks, "Current generator minimum", tests, "SMR60 minimum output | -30 dBm")
+    require_contains(
+        checks,
+        "Current receiver display units",
+        tests,
+        "relative, not calibrated input power in dBFS",
+    )
+    require_contains(checks, "Current IIP3 procedure", tests, "#### 5. IIP3 measurement")
+    require_contains(checks, "Current IIP2 procedure", tests, "#### 6. IIP2 measurement")
+    require_absent(checks, "Removed unavailable receiver-status claim", tests, "Both daughterboards were tested")
+    require_absent(checks, "Removed obsolete receiver ceiling", tests, "stop at -20 dBm")
     require_contains(checks, "Synchronisation test status", tests, "Status: Not performed")
     require_contains(checks, "Hardware communication execution", tests, "hardware execution of Experiment 4")
 
@@ -170,8 +221,75 @@ def validate(project_repo: Path) -> dict[str, object]:
         "200 MHz USRP master clock",
         "labels the axis as velocity in m/s",
         "No CFAR or other target detector",
+        "Recorded hardware results",
+        "Highest reliably operated rate",
+        "200 MS/s",
+        "50 MS/s",
+        "40 MS/s",
+        "-25.68",
+        "-35.79",
+        "-25.13 dBm",
+        "6.94 dBm",
+        "-47.87",
+        "-29.59",
+        "-22.58 dB attenuator",
+        "20 dB",
+        "37.5 dB",
     ):
         require_contains(checks, f"Project-page distinction: {value}", project_page, value)
+
+    for filename, source in public_sources.items():
+        require_absent(checks, f"No obsolete navigation bar: {filename}", source, "SDR documentation")
+    hub = public_sources["Software_Defined_Radio_(SDR).wiki"]
+    hardware = public_sources["NI_USRP-2954R.wiki"]
+    require_contains(checks, "Hub has dedicated hardware section", hub, "== Hardware ==")
+    require_contains(checks, "Hub has one hardware entry", hub, "=== NI USRP-2954R ===")
+    require_contains(checks, "Hub nests project under hardware", hub, "==== Project on this hardware ====")
+    require_contains(checks, "Hardware hierarchy list", hardware, "== SDR hierarchy ==")
+    require_contains(checks, "Hardware project section", hardware, "== Project on this hardware ==")
+    require_contains(checks, "GitLab tree link", project_page, "https://git.rwth-aachen.de/ihf/sdr/jcas-ofdm/-/tree/main")
+    require_contains(checks, "GitLab source-file link", project_page, "https://git.rwth-aachen.de/ihf/sdr/jcas-ofdm/-/blob/main/Flow_graphs/OFDMJCAS.grc")
+
+    external_evidence: dict[str, object] = {}
+    extracted_results = read_results_pdf(results_pdf)
+    if extracted_results is None:
+        external_evidence["results_pdf"] = {"status": "not-present", "path": str(results_pdf)}
+    else:
+        for value in (
+            "Can work with 200 MS/s",
+            "Only reliable if 50 MS/s",
+            "offset did not exceed 50 Hz",
+            "-47.87",
+            "-29.59",
+            "-25.13",
+            "-24.44",
+            "6.57",
+            "6.94",
+            "-22.58 dB attenuator",
+        ):
+            require_contains(checks, f"Recorded-results PDF: {value}", extracted_results, value)
+        import hashlib
+
+        external_evidence["results_pdf"] = {
+            "status": "verified",
+            "path": str(results_pdf),
+            "sha256": hashlib.sha256(results_pdf.read_bytes()).hexdigest(),
+            "size_bytes": results_pdf.stat().st_size,
+        }
+
+    readme_checks: dict[str, str] = {}
+    for relative, expected in (
+        (Path("Test1") / "README.md", "Test1_TXRX.grc"),
+        (Path("Test2") / "README.md", "Test2B_IIP3.grc"),
+    ):
+        note_path = test_notes / relative
+        if note_path.is_file():
+            note_text = note_path.read_text(encoding="utf-8")
+            require_contains(checks, f"Test note {relative}", note_text, expected)
+            readme_checks[str(relative)] = "verified"
+        else:
+            readme_checks[str(relative)] = "not-present"
+    external_evidence["test_notes"] = {"path": str(test_notes), "checks": readme_checks}
 
     revision = subprocess.run(
         ["git", "-C", str(project_repo), "rev-parse", "HEAD"],
@@ -180,12 +298,13 @@ def validate(project_repo: Path) -> dict[str, object]:
         text=True,
     ).stdout.strip()
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "generated_at": datetime.now(UTC).isoformat(),
         "project_repository": project_repo.name,
         "project_revision": revision,
         "automatic_check_count": len(checks),
         "automatic_checks": checks,
+        "external_evidence": external_evidence,
         "manual_evidence_ledger": "SOURCE_MAP.md",
         "status": "passed",
     }
@@ -194,10 +313,16 @@ def validate(project_repo: Path) -> dict[str, object]:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--project-repo", type=Path, default=DEFAULT_PROJECT_REPO)
+    parser.add_argument("--results-pdf", type=Path, default=DEFAULT_RESULTS_PDF)
+    parser.add_argument("--test-notes", type=Path, default=DEFAULT_TEST_NOTES)
     parser.add_argument("--report", type=Path, default=DEFAULT_REPORT)
     args = parser.parse_args()
 
-    report = validate(args.project_repo.resolve())
+    report = validate(
+        args.project_repo.resolve(),
+        results_pdf=args.results_pdf.resolve(),
+        test_notes=args.test_notes.resolve(),
+    )
     report_path = args.report.resolve()
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")

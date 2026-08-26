@@ -1,13 +1,5 @@
 '''Software-defined radio (SDR)''' moves functions such as modulation, filtering, synchronization, and demodulation from fixed radio hardware into software. A configurable RF front end still converts between radio-frequency signals and digital samples.
 
-{| class="wikitable" style="width:100%; text-align:center;"
-! colspan="3" | SDR documentation
-|-
-| '''SDR overview'''
-| [[NI USRP-2954R|Hardware: NI USRP-2954R]]
-| [[OFDM-based Joint Communication and Sensing (JCAS)|Project: OFDM-based JCAS]]
-|}
-
 __TOC__
 
 == Overview ==
@@ -27,7 +19,7 @@ The usable frequency range, bandwidth, and sample rate depend on the complete pa
 
 The [[NI USRP-2954R]] is the documented IHF platform for wideband SDR work in the 10 MHz to 6 GHz range. The installed unit has two UBX-160 daughterboards and a dual-10-Gigabit-Ethernet host connection. Its hardware page contains the connector mapping, network setup, startup checks, and RF limits.
 
-==== Project on this platform ====
+==== Project on this hardware ====
 
 The [[OFDM-based Joint Communication and Sensing (JCAS)|OFDM-based Joint Communication and Sensing project]] uses the USRP-2954R to develop a shared OFDM waveform for data transmission and environmental sensing.
 

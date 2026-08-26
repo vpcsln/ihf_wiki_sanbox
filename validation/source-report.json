@@ -1,9 +1,9 @@
 {
-  "schema_version": 1,
-  "generated_at": "2026-08-12T14:58:57.103287+00:00",
+  "schema_version": 2,
+  "generated_at": "2026-08-26T16:19:57.154410+00:00",
   "project_repository": "jcas-ofdm",
-  "project_revision": "b95f0c49f7e54ba10c93670933c3e0a7c48c805d",
-  "automatic_check_count": 56,
+  "project_revision": "084933d0b1e772d5ace59db8b0ccb78163303a42",
+  "automatic_check_count": 101,
   "automatic_checks": [
     {
       "name": "Linux reference launcher values",
@@ -110,7 +110,43 @@
       "status": "passed"
     },
     {
-      "name": "Receiver test status",
+      "name": "Current Test 1 trial rates",
+      "status": "passed"
+    },
+    {
+      "name": "Current Test 1 master clock",
+      "status": "passed"
+    },
+    {
+      "name": "Current Test 1 project mapping",
+      "status": "passed"
+    },
+    {
+      "name": "Current receiver input limit",
+      "status": "passed"
+    },
+    {
+      "name": "Current generator minimum",
+      "status": "passed"
+    },
+    {
+      "name": "Current receiver display units",
+      "status": "passed"
+    },
+    {
+      "name": "Current IIP3 procedure",
+      "status": "passed"
+    },
+    {
+      "name": "Current IIP2 procedure",
+      "status": "passed"
+    },
+    {
+      "name": "Removed unavailable receiver-status claim",
+      "status": "passed"
+    },
+    {
+      "name": "Removed obsolete receiver ceiling",
       "status": "passed"
     },
     {
@@ -228,8 +264,167 @@
     {
       "name": "Project-page distinction: No CFAR or other target detector",
       "status": "passed"
+    },
+    {
+      "name": "Project-page distinction: Recorded hardware results",
+      "status": "passed"
+    },
+    {
+      "name": "Project-page distinction: Highest reliably operated rate",
+      "status": "passed"
+    },
+    {
+      "name": "Project-page distinction: 200 MS/s",
+      "status": "passed"
+    },
+    {
+      "name": "Project-page distinction: 50 MS/s",
+      "status": "passed"
+    },
+    {
+      "name": "Project-page distinction: 40 MS/s",
+      "status": "passed"
+    },
+    {
+      "name": "Project-page distinction: -25.68",
+      "status": "passed"
+    },
+    {
+      "name": "Project-page distinction: -35.79",
+      "status": "passed"
+    },
+    {
+      "name": "Project-page distinction: -25.13 dBm",
+      "status": "passed"
+    },
+    {
+      "name": "Project-page distinction: 6.94 dBm",
+      "status": "passed"
+    },
+    {
+      "name": "Project-page distinction: -47.87",
+      "status": "passed"
+    },
+    {
+      "name": "Project-page distinction: -29.59",
+      "status": "passed"
+    },
+    {
+      "name": "Project-page distinction: -22.58 dB attenuator",
+      "status": "passed"
+    },
+    {
+      "name": "Project-page distinction: 20 dB",
+      "status": "passed"
+    },
+    {
+      "name": "Project-page distinction: 37.5 dB",
+      "status": "passed"
+    },
+    {
+      "name": "No obsolete navigation bar: NI_USRP-2954R.wiki",
+      "status": "passed"
+    },
+    {
+      "name": "No obsolete navigation bar: OFDM-based_Joint_Communication_and_Sensing_(JCAS).wiki",
+      "status": "passed"
+    },
+    {
+      "name": "No obsolete navigation bar: Software_Defined_Radio_(SDR).wiki",
+      "status": "passed"
+    },
+    {
+      "name": "Hub has dedicated hardware section",
+      "status": "passed"
+    },
+    {
+      "name": "Hub has one hardware entry",
+      "status": "passed"
+    },
+    {
+      "name": "Hub nests project under hardware",
+      "status": "passed"
+    },
+    {
+      "name": "Hardware hierarchy list",
+      "status": "passed"
+    },
+    {
+      "name": "Hardware project section",
+      "status": "passed"
+    },
+    {
+      "name": "GitLab tree link",
+      "status": "passed"
+    },
+    {
+      "name": "GitLab source-file link",
+      "status": "passed"
+    },
+    {
+      "name": "Recorded-results PDF: Can work with 200 MS/s",
+      "status": "passed"
+    },
+    {
+      "name": "Recorded-results PDF: Only reliable if 50 MS/s",
+      "status": "passed"
+    },
+    {
+      "name": "Recorded-results PDF: offset did not exceed 50 Hz",
+      "status": "passed"
+    },
+    {
+      "name": "Recorded-results PDF: -47.87",
+      "status": "passed"
+    },
+    {
+      "name": "Recorded-results PDF: -29.59",
+      "status": "passed"
+    },
+    {
+      "name": "Recorded-results PDF: -25.13",
+      "status": "passed"
+    },
+    {
+      "name": "Recorded-results PDF: -24.44",
+      "status": "passed"
+    },
+    {
+      "name": "Recorded-results PDF: 6.57",
+      "status": "passed"
+    },
+    {
+      "name": "Recorded-results PDF: 6.94",
+      "status": "passed"
+    },
+    {
+      "name": "Recorded-results PDF: -22.58 dB attenuator",
+      "status": "passed"
+    },
+    {
+      "name": "Test note Test1/README.md",
+      "status": "passed"
+    },
+    {
+      "name": "Test note Test2/README.md",
+      "status": "passed"
     }
   ],
+  "external_evidence": {
+    "results_pdf": {
+      "status": "verified",
+      "path": "/home/vpc/Dokumente/RWTH_IHF/Tests results.pdf",
+      "sha256": "421cc17430ed1c3da1e9c3c67f2ab6a36defef78a1eaf1391985845198d3e638",
+      "size_bytes": 285625
+    },
+    "test_notes": {
+      "path": "/home/vpc/Dokumente/RWTH_IHF/Test_1_2_new_folder_18aug",
+      "checks": {
+        "Test1/README.md": "verified",
+        "Test2/README.md": "verified"
+      }
+    }
+  },
   "manual_evidence_ledger": "SOURCE_MAP.md",
   "status": "passed"
 }

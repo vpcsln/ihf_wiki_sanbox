@@ -8,7 +8,7 @@ This folder contains MediaWiki source for three linked IHF wiki pages:
 | `pages/NI_USRP-2954R.wiki` | `NI USRP-2954R` |
 | `pages/OFDM-based_Joint_Communication_and_Sensing_(JCAS).wiki` | `OFDM-based Joint Communication and Sensing (JCAS)` |
 
-The IHF MediaWiki does not enable subpages in its main namespace. The drafts therefore use standalone titles with explicit navigation links instead of slash-based titles.
+The IHF MediaWiki does not enable subpages in its main namespace. The drafts therefore use standalone titles with explicit links. The SDR hub has one dedicated Hardware entry for the NI USRP-2954R, and the JCAS project is listed below that hardware entry.
 
 Together, these three pages form one SDR documentation set. The SDR page is the hub, while the linked hardware and project pages contain the detailed material. Maintain and review all three together.
 
@@ -60,7 +60,7 @@ With the `jcas-ofdm` checkout beside this directory, compare the high-risk imple
 python3 validate_sources.py
 ```
 
-This checks launcher values, carrier maps, stream signatures, channel parameters, ZMQ ports, test-status wording, legacy block-definition handling, and the public/private documentation boundary. It writes `validation/source-report.json`. Manufacturer specifications and prose-level judgements remain recorded in `SOURCE_MAP.md` and require human review.
+This checks launcher values, carrier maps, stream signatures, channel parameters, ZMQ ports, current Test 1/Test 2B wording, recorded hardware-result values when `Tests results.pdf` is present, hierarchy structure, GitLab source links, legacy block-definition handling, and the public/private documentation boundary. It writes `validation/source-report.json`. Manufacturer specifications and prose-level judgements remain recorded in `SOURCE_MAP.md` and require human review.
 
 ## Local IHF Wiki examples
 

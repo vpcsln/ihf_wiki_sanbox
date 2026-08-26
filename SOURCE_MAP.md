@@ -1,18 +1,20 @@
 # Source and claim ledger for the SDR wiki set
 
-This is the internal verification record for the three public wiki drafts. It is not intended for publication. The public pages deliberately omit local working-document names and defer changing procedures and results to the project repository.
+This is the internal verification record for the three public wiki drafts. It is not intended for publication. The public pages deliberately omit local working-document names; stable measured results are summarised on the JCAS page, while changing procedures and raw records remain in the project material.
 
 ## Verified baseline
 
 | Source set | Revision or snapshot used |
 |---|---|
-| `jcas-ofdm` repository | `b95f0c49f7e54ba10c93670933c3e0a7c48c805d` (`Improved Test 2B`) |
+| `jcas-ofdm` repository | `084933d` (`Fixed inaccuracies`, 2026-08-20; current `main`) |
 | Existing IHF SDR wiki page | revision 7595, 2026-07-14 14:28:38 UTC |
 | IHF example-page corpus | 78 deduplicated latest revisions fetched 2026-08-12; hashes verified |
 | NI USRP-2954R specification | NI document 375725C |
 | Ettus UBX documentation | current page checked 2026-08-12 |
 | UHD X300/X310 documentation | current manual checked 2026-08-12 |
+| Recorded hardware results | `Tests results.pdf`, SHA-256 `421cc17430ed1c3da1e9e3c67f2ab6a36defef78a1eaf1391985845198d3e638`, modified 2026-08-17 |
 | Local project documents | every PDF, DOCX, PPTX, and the duplicate documentation archive under the project workspace was inventoried and text-extracted where applicable |
+| Test implementation notes | `Test_1_2_new_folder_18aug/Test1/README.md` and `Test2/README.md`, checked against the current test procedure |
 
 Recheck current manufacturer limits and current repository code before publication if this baseline changes.
 
@@ -34,7 +36,7 @@ When two sources use the same term for different quantities, preserve the distin
 | `NI USRP-2954R` | Stable device facts, installed configuration, networking, startup checks, connector behaviour, safety, troubleshooting | A copy of the JCAS test plan |
 | `OFDM-based Joint Communication and Sensing (JCAS)` | Project purpose, intended architecture, implemented graph, parameter context, repository map, status and interpretation limits | A claim that incomplete hardware or sensing work is finished |
 
-The IHF main namespace has subpages disabled. The hierarchy is therefore expressed by page titles, a three-cell navigation table, and explicit links rather than slash-based titles.
+The IHF main namespace has subpages disabled. The hierarchy is therefore expressed by page titles, dedicated hardware/project sections, and explicit links rather than slash-based titles. The SDR hub contains one hardware entry, and the JCAS project is nested below that entry.
 
 ## Claim ledger: SDR hub
 
@@ -66,8 +68,8 @@ The IHF main namespace has subpages disabled. The hierarchy is therefore express
 | Host/USRP addresses `.30.1/.30.2` and `.40.1/.40.2`, MTU 9000, socket buffers 24912805 | local hardware setup and current test plan | Supported |
 | XG provides two 10GbE interfaces | UHD X300/X310 manual | Supported |
 | 200 MHz master clock and requested 100 MS/s for initial RF work | current test plan and confirmed project facts | Supported; kept separate from the simulation rate |
-| Both daughterboards checked as transmitters and receivers near 5.8 GHz | current test plan | Supported as status only; public text does not invent results or assign roles |
-| Project receiver ceiling -20 dBm | current receiver test plan | Supported as a conservative project ceiling below NI's -15 dBm maximum |
+| Both daughterboards checked as transmitters and receivers near 5.8 GHz | current test plan and recorded Test 2A/2B results | Supported; public text summarises the recorded board comparisons without assigning final roles |
+| Project receiver limit -15 dBm | current receiver test procedure and recorded Test 2B results | Supported as the maximum input used in the current procedure; it is also the NI specified maximum and is not a target operating level |
 | No Throttle block in hardware path | GNU Radio/UHD operation and current test plan | Supported |
 | Reflashing is maintenance, not routine startup | UHD X300/X310 manual and setup process | Supported |
 
@@ -81,10 +83,21 @@ The IHF main namespace has subpages disabled. The hierarchy is therefore express
 | Planned primary node uses separate daughterboards for TX and sensing RX; a second USRP receives communication | system-level architecture and project updates | Supported as intended architecture; the second device's exact configuration is not asserted |
 | Main graph is a software channel-model simulation with no UHD Source or Sink | `Flow_graphs/OFDMJCAS.grc` | Confirmed |
 | Streaming and pure communication hardware work were performed | current `docs/First_tests.md` | Supported as project-record status; quantitative success is not inferred |
-| Both TX and RX daughterboard checks were performed | current `docs/First_tests.md` | Supported; detailed RX settings/results remain unavailable |
+| Both TX and RX daughterboard checks were performed | current `docs/First_tests.md` and `Tests results.pdf` | Supported; the current result set includes quantitative Test 2B LO/image, compression, IIP3, and IIP2 observations |
 | Inter-daughterboard synchronisation test not performed | current `docs/First_tests.md` | Confirmed |
 | Static sensing and joint OTA procedures lack documented completion results | current `docs/First_tests.md` and repository result inventory | Confirmed; described as planned/unvalidated |
 | No CFAR or target detector in current graph | current GRC and Python source search | Confirmed |
+
+### Recorded hardware results
+
+| Public claim | Verification source | Result or qualification |
+|---|---|---|
+| Test 1 reliable ceilings range from 200 MS/s for receive-only cases to 50 MS/s for two TX/two RX | `Tests results.pdf`, current `docs/First_tests.md` | Supported as the recorded matrix; higher-rate TX cases produced underflows and the 40 MS/s trial has no separate matrix entry |
+| Most Test 2A network timing algorithms stayed within 50 Hz; GPS was an exception | `Tests results.pdf` | Supported as a measured observation; it does not demonstrate dedicated inter-daughterboard synchronisation |
+| Test 2A LO/image values are -25.68/-38.32 dB for A and -25.41/-35.79 dB for B | `Tests results.pdf` | Supported at the recorded 5.8 GHz setup; values are not universal specifications |
+| Test 2B LO/image values are -47.87/-28.66 dB for A and -47.76/-29.59 dB for B | `Tests results.pdf` | Supported; desired peak levels are dBFS and the suppression values are relative differences |
+| Test 2B medium-gain response is linear from -20 to 7 dBm generator setting with a -22.58 dB attenuator; maximum-gain response is linear from -20 to 0 dBm and unstable from 0 to 5 dBm | `Tests results.pdf` | Supported as the recorded setup; the generator setting is not the receiver input unless the path loss is included |
+| Test 2B IIP3 is -25.13 dBm (A) and -24.44 dBm (B); IIP2 is 6.57 dBm (A) and 6.94 dBm (B) | `Tests results.pdf`, current Test 2B formulas | Supported under the stated tone, gain, rate, and input-reference conditions |
 | TDoA was investigated but not implemented | project analysis documents and current code search | Kept out of the public overview because it is not needed to explain current behaviour |
 
 ### Implemented OFDM chain
@@ -134,7 +147,7 @@ The IHF main namespace has subpages disabled. The hierarchy is therefore express
 
 - `README.md`, `MAINTENANCE.md`, launchers, ignore rules, and repository history.
 - Every GRC file under `Flow_graphs/`, the hand-written TX/RX Python module, generated graph code where needed for cross-checking, custom block definitions, and every plotter under `Plots/`.
-- `docs/First_tests.md`, including all seven test stages and the current Test 2B receiver section.
+- `docs/First_tests.md`, including all seven test stages and the current Test 2B receiver section. The latest revision removes the old standalone RX-gain and frequency-response subsections and adds IIP3/IIP2 procedures.
 
 ### Local project and architecture documents
 
@@ -142,6 +155,8 @@ The IHF main namespace has subpages disabled. The hierarchy is therefore express
 - `Biweekly update 19_06_26.docx` and `Second biweekly update.docx`.
 - `Implementation problems.docx`, `Protocol initial meeting RWTH-UMA.docx`, `SoA analysis.docx`, `System-level architecture.docx`, `Thesis Matías López Lovera.docx`, `Trials.pptx`, and `Figures.pptx`.
 - Historical `First tests.docx` copies and `Docs.zip`, checked for provenance and overlap but not treated as current.
+- The recorded `Tests results.pdf`, including Test 1 stream matrix, Test 2A transmitter values, and Test 2B receiver values.
+- The Test 1 and Test 2 implementation readmes under `Test_1_2_new_folder_18aug/`, including channel-selection, scheduling, attenuator, and dBFS notes.
 
 ### Literature corpus
 
@@ -162,18 +177,20 @@ The local read-only corpus contains the latest readable pages from Hardware, Sof
 | Claiming the main graph controls the USRP | Explicitly states that the graph has no UHD Source or Sink |
 | Assigning final TX/RX roles from incomplete measurements | States that comparable recorded results are required before assignment |
 | Reporting Test 5 or Test 6 as completed | Kept as planned with no completed result set documented |
-| Calling displayed Frequency Sink values calibrated dBm or receiver SNR | Detailed caution remains in the repository test procedure; public page avoids the claim |
+| Calling displayed Frequency Sink values calibrated dBm or receiver SNR | Public page labels them dBFS and separates them from dBm input references |
 | Calling DDM bins detected targets or calibrated RCS | Explicitly prohibited in interpretation limits |
 | Calling the reference DDM horizontal axis physical velocity | Public page records the missing `f_c` and current label/calculation mismatch |
 | Claiming zero-padding improves physical resolution | Public page distinguishes display sampling from waveform resolution |
 | Copying local working-document names into a public page | Automated test rejects local research paths and names |
-| Using slash titles as MediaWiki subpages | Three standalone titles are linked explicitly |
+| Using slash titles as MediaWiki subpages | Three standalone titles are linked explicitly; the hub uses a dedicated Hardware section with the JCAS project nested under the single USRP entry |
+| Leaving the old three-cell navigation bar in place | Removed; hierarchy is now represented by section headings and short parent/hardware/project lists |
+| Using incomplete Git links | JCAS source paths link directly to the `main` branch tree/blob URLs in the IHF GitLab repository |
 
 ## Pre-publication verification
 
-1. Confirm the `jcas-ofdm` revision and inspect changes to the GRC sources, `OFDMJCAStxrx.py`, launchers, plotters, maintenance guide, and current test document.
+1. Confirm the `jcas-ofdm` revision and inspect changes to the GRC sources, `OFDMJCAStxrx.py`, launchers, plotters, maintenance guide, and current test document. The current audit uses `084933d`.
 2. Recheck all manufacturer limits against the current official NI and Ettus pages.
-3. Run the sandbox source tests and reference-corpus verification.
+3. Run `python3 validate_sources.py` (including the local recorded-results PDF when present), the sandbox source tests, and reference-corpus verification.
 4. Regenerate standalone previews and inspect their validation report.
 5. Run the Linux project preflight in the intended GNU Radio environment. A local preview-machine check is not evidence that the laboratory host or USRP works.
 6. Browse all three local pages at desktop and narrow widths. Check hierarchy links, table layout, commands, external URLs, categories, and the absence of local-only document references.

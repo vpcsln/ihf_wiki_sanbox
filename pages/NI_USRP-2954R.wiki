@@ -1,12 +1,10 @@
-The '''NI USRP-2954R''' is a two-channel software-defined radio used for wideband prototyping at IHF. The unit documented here contains two UBX-160 RF daughterboards and is connected to its host through both 10 Gigabit Ethernet ports.
+The '''NI USRP-2954R''' is a two-transmit/two-receive software-defined radio used for wideband prototyping at IHF. The unit documented here contains two UBX-160 RF daughterboards and is connected to its host through both 10 Gigabit Ethernet ports.
 
-{| class="wikitable" style="width:100%; text-align:center;"
-! colspan="3" | SDR documentation
-|-
-| [[Software Defined Radio (SDR)|SDR overview]]
-| '''Hardware: NI USRP-2954R'''
-| [[OFDM-based Joint Communication and Sensing (JCAS)|Project: OFDM-based JCAS]]
-|}
+== SDR hierarchy ==
+
+* Parent page: [[Software Defined Radio (SDR)|Software Defined Radio (SDR)]]
+* Hardware: '''NI USRP-2954R'''
+* Project on this hardware: [[OFDM-based Joint Communication and Sensing (JCAS)|OFDM-based Joint Communication and Sensing (JCAS)]]
 
 __TOC__
 
@@ -132,18 +130,22 @@ For a reproducible run, record:
 
 The achievable streaming rate depends on the number of active channels, over-the-wire format, Ethernet configuration, and host processing load. Treat a successful device probe as a connectivity check, not as a throughput result.
 
-== JCAS use ==
+== Project on this hardware ==
 
-The [[OFDM-based Joint Communication and Sensing (JCAS)]] project plans to use one daughterboard for transmission and the other for sensing reception on the primary USRP. Both daughterboards have been checked as transmitters and receivers near 5.8 GHz. Their final roles should be based on documented, comparable RF measurements; the completed checks alone do not establish which board is better suited to either role.
+=== OFDM-based Joint Communication and Sensing (JCAS) ===
 
-The project repository contains the current measurement procedure and status. The wiki records the stable hardware setup and does not duplicate the detailed test instructions.
+The [[OFDM-based Joint Communication and Sensing (JCAS)]] project uses one daughterboard for transmission and the other for sensing reception on the primary USRP. Both daughterboards have been checked as transmitters and receivers near 5.8 GHz. Their final roles should be based on documented, comparable RF measurements; the completed checks alone do not establish which board is better suited to either role.
+
+The [https://git.rwth-aachen.de/ihf/sdr/jcas-ofdm jcas-ofdm repository] contains the current measurement procedures, result records, implementation, and launcher configuration. The wiki records the stable hardware setup and links to the project page rather than duplicating every changing test instruction.
+
+For GNU Radio device selection, the project test record uses <code>Mb0:subdev Spec</code> values <code>A:0</code>, <code>B:0</code>, or <code>A:0 B:0</code>. For one or two Ethernet links, the corresponding UHD device arguments use <code>addr=&lt;IP_ADDR&gt;</code> or <code>addr=&lt;IP_ADDR&gt;, second_addr=&lt;SECOND_IP_ADDR&gt;</code>. Daughterboard, UHD channel, RF connector, and Ethernet-port mappings must be recorded from UHD for each run.
 
 == RF safety ==
 
 * Carry out conducted checks without antennas unless radiation is an explicit part of the approved setup.
 * Disable the generator or USRP output before changing RF connections.
 * Use rated 50-ohm terminations, cables, adapters, and attenuators.
-* Never apply more than -15 dBm to a USRP-2954R receiver input. The JCAS receiver comparison uses -20 dBm as a more conservative ceiling and stops sooner if non-linearity appears.
+* Never apply more than -15 dBm to a USRP-2954R receiver input. The current JCAS receiver procedure uses -15 dBm as the maximum applied input and stops sooner if non-linearity appears.
 * Begin generator and transmitter tests at low power. Account for the complete signal path and the limits of every connected instrument.
 * Never connect a transmitter directly to a receiver without verified attenuation and isolation.
 

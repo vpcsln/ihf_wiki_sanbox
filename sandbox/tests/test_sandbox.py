@@ -75,6 +75,30 @@ class WikiSourceTests(unittest.TestCase):
                     if related_title != title:
                         self.assertIn(related_title, rendered.links)
 
+    def test_hierarchy_uses_dedicated_sections_not_navigation_bar(self) -> None:
+        hub = (PROJECT_DIR / "pages" / self.config["pages"]["Software Defined Radio (SDR)"]).read_text(encoding="utf-8")
+        hardware = (PROJECT_DIR / "pages" / self.config["pages"]["NI USRP-2954R"]).read_text(encoding="utf-8")
+        project = (PROJECT_DIR / "pages" / self.config["pages"]["OFDM-based Joint Communication and Sensing (JCAS)"]).read_text(encoding="utf-8")
+        for source in (hub, hardware, project):
+            self.assertNotIn("SDR documentation", source)
+        self.assertIn("== Hardware ==", hub)
+        self.assertIn("=== NI USRP-2954R ===", hub)
+        self.assertIn("==== Project on this hardware ====", hub)
+        self.assertIn("== SDR hierarchy ==", hardware)
+        self.assertIn("== Project on this hardware ==", hardware)
+        self.assertIn("== SDR hierarchy ==", project)
+
+    def test_jcas_source_links_target_gitlab_main(self) -> None:
+        source = (PROJECT_DIR / "pages" / self.config["pages"]["OFDM-based Joint Communication and Sensing (JCAS)"]).read_text(encoding="utf-8")
+        self.assertIn("https://git.rwth-aachen.de/ihf/sdr/jcas-ofdm/-/tree/main", source)
+        self.assertIn("https://git.rwth-aachen.de/ihf/sdr/jcas-ofdm/-/blob/main/Flow_graphs/OFDMJCAS.grc", source)
+
+    def test_recorded_receiver_results_are_labelled_and_present(self) -> None:
+        source = (PROJECT_DIR / "pages" / self.config["pages"]["OFDM-based Joint Communication and Sensing (JCAS)"]).read_text(encoding="utf-8")
+        for value in ("-47.87", "-29.59", "-25.13 dBm", "6.94 dBm", "dBFS"):
+            with self.subTest(value=value):
+                self.assertIn(value, source)
+
     def test_public_pages_do_not_expose_local_research_files(self) -> None:
         forbidden = (
             "Docs/",
